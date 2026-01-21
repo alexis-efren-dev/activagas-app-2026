@@ -1,6 +1,8 @@
 import gql from 'graphql-tag';
-import {useGraphQlQuery} from '../../hooks/useGraphQlQuery';
-const EDITACTIVATE = gql`
+import {createQueryHook} from '../createServiceHooks';
+import type {GetVehiclesResolverResponse} from '../../types/graphql';
+
+const QUERY = gql`
   query getVehiclesResolver($variables: TypesGetVehicles!) {
     getVehiclesResolver(variables: $variables) {
       data {
@@ -16,11 +18,19 @@ const EDITACTIVATE = gql`
     }
   }
 `;
-export const useQueryGetVehicles = (variables: any) => {
-  return useGraphQlQuery(
-    'getVehiclesResolver',
-    EDITACTIVATE,
-    variables,
-    'getVehiclesResolver',
-  );
-};
+
+interface GetVehiclesVariables {
+  idGas: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+/**
+ * Query hook for fetching vehicles list
+ * Returns typed response with GetVehiclesResolverResponse
+ */
+export const useQueryGetVehicles = createQueryHook<
+  GetVehiclesResolverResponse,
+  GetVehiclesVariables
+>('getVehiclesResolver', QUERY, 'getVehiclesResolver');
