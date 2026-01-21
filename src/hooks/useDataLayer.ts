@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import {
   HCESessionContext,
@@ -12,6 +11,7 @@ import type {
   LogEntry,
 } from './DataLayerTypes';
 
+/** Default NFC tag properties */
 const defaultProps: NFCTagReactStateProps = {
   content: '',
   type: NFCTagType4.stringFromContentType(NFCTagType4NDEFContentType.Text),
@@ -19,67 +19,100 @@ const defaultProps: NFCTagReactStateProps = {
   _pristine: true,
 };
 
+/** Debounce delay for tag updates (ms) */
+const TAG_UPDATE_DELAY = 600;
+
+/**
+ * Creates a log entry with timestamp
+ */
 const createLogEntry = (eventName: string): LogEntry => ({
   time: new Date().toISOString(),
   message: eventName,
 });
 
 /**
- * The hook encapsulating the data management layer.
+ * Props for useDataLayer hook
  */
-interface Props {
-  terminate?: any;
-  terminateWrite?: any;
+interface UseDataLayerProps {
+  /** Callback when NFC read event occurs */
+  terminate?: () => void;
+  /** Callback when NFC write completes with content */
+  terminateWrite?: (content: string) => void;
 }
+
+/**
+ * Hook for managing NFC/HCE data layer
+ *
+ * Handles:
+ * - HCE session state (enabled/disabled)
+ * - NFC tag properties synchronization
+ * - Bidirectional sync between app state and HCE library
+ * - Event logging
+ *
+ * @param props - Configuration callbacks
+ * @returns DataLayer object with state and controls
+ */
 const useDataLayer = ({
   terminate = () => {},
   terminateWrite,
-}: Props): DataLayer => {
+}: UseDataLayerProps): DataLayer => {
   const {session} = useContext(HCESessionContext);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // ** Following section of code is responsible for: **
-  // Management of "Enabled" field state in the application
+  // ============================================
+  // Session Enabled State Management
+  // ============================================
   const [enabled, setEnabled] = useState<boolean>(false);
 
+  /**
+   * Toggle HCE session on/off
+   */
   const switchSession = useCallback(
-    async (enable: any) => {
+    async (enable: boolean) => {
       try {
         setLoading(true);
         await session.setEnabled(enable);
         setEnabled(enable);
-        setLoading(false);
-        //fix data in memory
-        //  setNfcTagProps(defaultProps);
       } catch (e) {
-        console.log('e', e);
+        console.error('HCE session switch error:', e);
+      } finally {
+        setLoading(false);
       }
     },
-    [setLoading, session, setEnabled],
+    [session],
   );
 
-  // ** Following section of code is responsible for: **
-  // Management of "HCE Application" - related fields state in the application
+  // ============================================
+  // NFC Tag Properties State
+  // ============================================
   const [nfcTagProps, setNfcTagProps] =
     useState<NFCTagReactStateProps>(defaultProps);
 
+  /**
+   * Update a single NFC tag property
+   */
   const updateProp = useCallback(
-    (prop: string, value: any) => {
-      setNfcTagProps((state: any) => ({
+    (prop: keyof Omit<NFCTagReactStateProps, '_pristine'>, value: string | boolean) => {
+      setNfcTagProps((state) => ({
         ...state,
         [prop]: value,
         _pristine: false,
       }));
     },
-    [setNfcTagProps],
+    [],
   );
 
-  // ** Following section of code is responsible for: **
-  // Synchronization of state: APPLICATION ---> LIBRARY.
-  const timeout: any = useRef<ReturnType<typeof setTimeout>>(null);
+  // ============================================
+  // Sync: APPLICATION → LIBRARY
+  // Debounced update of HCE library when app state changes
+  // ============================================
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  /**
+   * Push tag properties to HCE library
+   */
   const updateTag = useCallback(
-    async (localNfcTagProps: any) => {
+    async (localNfcTagProps: NFCTagReactStateProps) => {
       setLoading(true);
       const tag = new NFCTagType4({
         type: NFCTagType4.contentTypeFromString(localNfcTagProps.type),
@@ -88,31 +121,42 @@ const useDataLayer = ({
       });
       try {
         await session.setApplication(tag);
-      } catch (e: any) {
+      } catch {
+        // Retry once on failure
         await session.setApplication(tag);
       }
-
       setLoading(false);
     },
-    [setLoading, session],
+    [session],
   );
 
+  // Debounced sync to library when props change
   useEffect(() => {
     if (!nfcTagProps._pristine) {
-      const boundUpdateTag = updateTag.bind(null, nfcTagProps);
-      timeout.current = setTimeout(boundUpdateTag, 600);
+      timeoutRef.current = setTimeout(() => {
+        updateTag(nfcTagProps);
+      }, TAG_UPDATE_DELAY);
     }
-
-    return () => clearTimeout(timeout.current);
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [nfcTagProps, updateTag]);
 
-  // ** Following section of code is responsible for: **
-  // Synchronization of state: LIBRARY ---> APPLICATION.
+  // ============================================
+  // Sync: LIBRARY → APPLICATION
+  // Update app state when HCE library state changes
+  // ============================================
+  /**
+   * Pull state from HCE library to app
+   */
   const updateApp = useCallback(() => {
     const application = session.application;
     if (application === null) {
       return;
     }
+
     setNfcTagProps({
       type: application.content.type,
       content: application.content.content,
@@ -120,68 +164,67 @@ const useDataLayer = ({
       _pristine: true,
     });
 
-    if (terminateWrite) {
-      //TODO el k puede cambiar con la implementacion de los aes128
-      if (application.content.content !== 'init') {
-        terminateWrite(application.content.content);
-      }
+    // Notify on write completion (content !== 'init')
+    // TODO: Content check may change with AES128 implementation
+    if (terminateWrite && application.content.content !== 'init') {
+      terminateWrite(application.content.content);
     }
 
     setEnabled(session.enabled);
-  }, [session, setNfcTagProps, setEnabled]);
+  }, [session, terminateWrite]);
 
+  // Subscribe to HCE write events
   useEffect(() => {
     const cancelSubscription = session.on(
       HCESession.Events.HCE_STATE_WRITE_FULL,
       updateApp,
     );
-    updateApp();
-
+    updateApp(); // Initial sync
     return () => cancelSubscription();
-  }, [session, setNfcTagProps, setEnabled, updateApp]);
+  }, [session, updateApp]);
 
-  const logRead = () => {
-    //const applicationData = session.application;
+  // ============================================
+  // HCE Read Event Handler
+  // ============================================
+  const handleRead = useCallback(() => {
     terminate();
-  };
+  }, [terminate]);
+
+  // Subscribe to HCE read events
   useEffect(() => {
     const cancelSubscription = session.on(
-      HCESession.Events.HCE_STATE_READ, //aqui poner evento de escritura y arriba detectar si el content.content es igual a success, si es asi, terminar a la v
-      logRead,
+      HCESession.Events.HCE_STATE_READ,
+      handleRead,
     );
-
     return () => cancelSubscription();
-  }, [session, setNfcTagProps, setEnabled, updateApp]);
+  }, [session, handleRead]);
 
-  // ** Following section of code is responsible for: **
-  // Logging the events to preview in "Events" pane.
+  // ============================================
+  // Event Logging
+  // ============================================
   const [log, setLog] = useState<Array<LogEntry>>([]);
 
-  const logger = useCallback(
-    (eventData: any) => {
-      setLog(msg => [...msg, createLogEntry(eventData)]);
-    },
-    [setLog],
-  );
+  const logger = useCallback((eventData: any) => {
+    setLog((prev) => [...prev, createLogEntry(String(eventData))]);
+  }, []);
 
+  // Subscribe to all HCE events for logging
   useEffect(() => {
     const cancelSubscription = session.on(null, logger);
     return () => cancelSubscription();
   }, [session, logger]);
-  /*
-  useEffect(() => {
-    console.log(
-      'Refresh App',
-      nfcTagProps,
-      session.application,
-      session.enabled,
-    );
-  }, [enabled, JSON.stringify(session), nfcTagProps]);
-  */
 
-  // ** Following section of code is responsible for: **
-  // Returning the hook result.
-  return {nfcTagProps, updateProp, switchSession, log, enabled, loading};
+  // ============================================
+  // Return Hook API
+  // ============================================
+  return {
+    nfcTagProps,
+    updateProp,
+    switchSession,
+    log,
+    enabled,
+    loading,
+  };
 };
 
 export default useDataLayer;
