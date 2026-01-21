@@ -1,0 +1,105 @@
+[{
+    "name":"cellPhone",
+    "label":"Ingresa tu telefono",
+    "value":"",
+    "keyboard":"numeric",
+    "errormessagestyles":"text-red-500",
+    "colorIcon":"white",
+    "iconDirection":"right",
+    "icon":"account",
+    "customStyle":{
+        "marginVertical": 5
+      },
+    "theme":{
+        "colors": {
+          "placeholder": "white",
+          "text": "white",
+          "primary": "white",
+          "background": "black"
+        }
+      },
+    "validations":[
+        {
+            "type":"required"
+        },
+        {
+            "type":"minLength",
+            "value":8
+        },
+        {
+            "type":"maxLength",
+            "value":14
+        }
+    ]
+},
+{
+    "name":"password",
+    "label":"Ingresa tu contraseña",
+    "value":"",
+    "secureTextEntry":"true",
+    "keyboard":"default",
+    "errormessagestyles":"text-red-500",
+    "colorIcon":"white",
+    "iconDirection":"right",
+    "icon":"eye",
+    "customStyle":{
+        "marginVertical": 5
+      },
+    "theme":{
+        "colors": {
+          "placeholder": "white",
+          "text": "white",
+          "primary": "white",
+          "background": "black"
+        }
+      },
+    "validations":[
+        {
+            "type":"required"
+        },
+        {
+            "type":"minLength",
+            "value":8
+        },
+        {
+            "type":"maxLength",
+            "value":14
+        }
+    ]
+},
+{
+    "name":"confirmPassword",
+    "label":"confirmar contraseña",
+    "value":"",
+    "secureTextEntry":"true",
+    "keyboard":"default",
+    "errormessagestyles":"text-red-500",
+    "colorIcon":"white",
+    "iconDirection":"right",
+    "icon":"eye",
+    "customStyle":{
+        "marginVertical": 5
+      },
+    "theme":{
+        "colors": {
+          "placeholder": "white",
+          "text": "white",
+          "primary": "white",
+          "background": "black"
+        }
+      },
+    "validations":[
+        {
+            "type":"required"
+        },
+        {
+            "type":"minLength",
+            "value":8
+        },
+        {
+            "type":"maxLength",
+            "value":14
+        }
+    ]
+}
+]

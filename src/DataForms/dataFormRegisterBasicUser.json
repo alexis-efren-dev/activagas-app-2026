@@ -1,0 +1,37 @@
+[{
+    "name":"cellPhone",
+    "label":"Ingresa tu telefono",
+    "iconUri":"https://activagas-files.s3.amazonaws.com/phone.png",
+    "helper":"00 0000 0000",
+    "value":"",
+    "keyboard":"numeric",
+    "errormessagestyles":"text-red-500",
+    "colorIcon":"white",
+    "iconDirection":"right",
+    "icon":"account",
+    "customStyle":{
+        "marginVertical": 5
+      },
+    "theme":{
+        "colors": {
+          "placeholder": "white",
+          "text": "white",
+          "primary": "white",
+          "background": "black"
+        }
+      },
+    "validations":[
+        {
+            "type":"required"
+        },
+        {
+            "type":"minLength",
+            "value":8
+        },
+        {
+            "type":"maxLength",
+            "value":14
+        }
+    ]
+}
+]

@@ -1,0 +1,512 @@
+[
+  {
+    "name": "firstName",
+    "label": "Ingresar Nombre",
+    "value": "",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Nombre",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "onlyLettersAndNumber": true,
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 50
+      }
+    ]
+  },
+  {
+    "name": "lastName",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Apellidos",
+    "label": "Ingresar Apellidos",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "email",
+    "label": "Ingresar Email",
+    "iconUri": "",
+    "helper": "Email",
+    "value": "",
+    "keyboard": "email-address",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "email",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "state",
+    "onlyLettersAndNumber": true,
+    "label": "Ingresar Estado",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Estado",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "municipality",
+    "onlyLettersAndNumber": true,
+    "label": "Ingresar Municipio",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Municipio",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "address",
+    "onlyLettersAndNumber": true,
+    "label": "Ingresar Direccion",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Direccion",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "brand",
+    "label": "Ingresar Marca",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Marca",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "model",
+    "label": "Ingresar Modelo",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Modelo",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "plates",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Placas",
+    "isUpper": true,
+    "label": "Ingresar Placas",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "cylinders",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Cilindros",
+    "label": "Ingresar Cilindros",
+    "value": "",
+    "keyboard": "numeric",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 1
+      },
+      {
+        "type": "maxLength",
+        "value": 4
+      }
+    ]
+  },
+  {
+    "name": "circulationSerial",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Numero de serie",
+    "label": "Serie de circulacion",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "tankSerial",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Numero de serie",
+    "label": "Serie del tanque",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "inactivityDays",
+    "label": "Dias de inactividad",
+    "value": "",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Dias",
+    "keyboard": "numeric",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 1
+      },
+      {
+        "type": "maxLength",
+        "value": 4
+      }
+    ]
+  },
+  {
+    "name": "others",
+    "onlyLettersAndNumber": true,
+    "label": "Ingresar Observaciones extra",
+    "iconUri": "",
+    "helper": "Observaciones",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "note-multiple",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  }
+]

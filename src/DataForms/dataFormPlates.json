@@ -1,0 +1,40 @@
+[
+  {
+    "name": "plates",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/buscar.png",
+    "helper": "Placas",
+    "isUpper": true,
+    "label": "Ingresar Placas",
+    "value": "",
+    "keyboard": "default",
+    "onlyLettersAndNumber": true,
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  }
+]

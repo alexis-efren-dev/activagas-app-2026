@@ -1,0 +1,115 @@
+[
+  {
+    "name": "liters",
+    "label": "LITROS",
+    "value": "",
+    "helper": "Ingresar Litros",
+    "keyboard": "numeric",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "black",
+    "iconDirection": "right",
+    "icon": "account",
+    "customStyle": {
+      "marginVertical": 5,
+      "height": 75,
+      "borderRadious": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "black",
+        "text": "black",
+        "primary": "black",
+        "background": "white"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 1
+      },
+      {
+        "type": "maxLength",
+        "value": 14
+      }
+    ]
+  },
+  {
+    "name": "mileage",
+    "label": "KILOMETRAJE",
+    "value": "",
+    "helper": "Ingresar Kilometraje",
+    "keyboard": "numeric",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "black",
+    "iconDirection": "right",
+    "icon": "account",
+    "customStyle": {
+      "marginVertical": 5,
+      "height": 75,
+      "borderRadious": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "black",
+        "text": "black",
+        "primary": "black",
+        "background": "white"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 1
+      },
+      {
+        "type": "maxLength",
+        "value": 14
+      }
+    ]
+  },
+  {
+    "name": "plates",
+    "label": "ESCANEAR ID",
+    "doNotShow": true,
+    "value": "",
+    "isUpper": true,
+    "helper": "ID",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "black",
+    "iconDirection": "right",
+    "icon": "account",
+    "customStyle": {
+      "marginVertical": 5,
+      "height": 75,
+      "borderRadious": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "black",
+        "text": "black",
+        "primary": "black",
+        "background": "white"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 54
+      }
+    ]
+  }
+]

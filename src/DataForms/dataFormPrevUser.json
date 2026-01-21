@@ -1,0 +1,294 @@
+[
+  {
+    "name": "brand",
+    "label": "Ingresar Marca",
+    "onlyLettersAndNumber": true,
+    "value": "",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Marca",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "model",
+    "label": "Ingresar Modelo",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Modelo",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "plates",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Placas",
+    "isUpper": true,
+    "label": "Ingresar Placas",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "cylinders",
+    "label": "Ingresar Cilindros",
+    "value": "",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Cilindros",
+    "keyboard": "numeric",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 1
+      },
+      {
+        "type": "maxLength",
+        "value": 4
+      }
+    ]
+  },
+  {
+    "name": "circulationSerial",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Numero de serie",
+    "label": "Serie de circulacion",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "tankSerial",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Numero de serie",
+    "label": "Serie del tanque",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "inactivityDays",
+    "label": "Dias de inactividad",
+    "value": "",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Dias",
+    "keyboard": "numeric",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 1
+      },
+      {
+        "type": "maxLength",
+        "value": 4
+      }
+    ]
+  },
+  {
+    "name": "others",
+    "onlyLettersAndNumber": true,
+    "label": "Ingresar Observaciones extra",
+    "iconUri": "",
+    "helper": "Observaciones",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "note-multiple",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  }
+]

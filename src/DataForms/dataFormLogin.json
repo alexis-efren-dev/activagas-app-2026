@@ -1,0 +1,78 @@
+[
+  {
+    "name": "cellPhone",
+    "label": "INGRESA TU TELEFONO",
+    "value": "",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/phone.png",
+    "helper": "00 0000 0000",
+    "keyboard": "numeric",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "black",
+    "iconDirection": "right",
+    "icon": "account",
+    "customStyle": {
+      "marginVertical": 5,
+      "height": 75,
+      "borderRadious": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "black",
+        "text": "black",
+        "primary": "black",
+        "background": "white"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 8
+      },
+      {
+        "type": "maxLength",
+        "value": 14
+      }
+    ]
+  },
+  {
+    "name": "password",
+    "label": "INGRESA TU CONTRASEÑA",
+    "onlyLettersAndNumber": true,
+    "helper": "********",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/password.png",
+    "value": "",
+    "secureTextEntry": "true",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "eye",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 8
+      },
+      {
+        "type": "maxLength",
+        "value": 14
+      }
+    ]
+  }
+]

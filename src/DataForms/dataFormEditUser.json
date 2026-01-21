@@ -1,0 +1,322 @@
+[
+  {
+    "name": "firstName",
+    "label": "Ingresar Nombre",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Nombre",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 50
+      }
+    ]
+  },
+  {
+    "name": "lastName",
+    "label": "Ingresar Apellidos",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Apellidos",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "email",
+    "label": "Ingresar Email",
+    "iconUri": "",
+    "helper": "Email",
+    "value": "",
+    "keyboard": "email-address",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "email",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "cellPhone",
+    "label": "Ingresa tu telefono",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Telefono",
+    "value": "",
+    "keyboard": "numeric",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "account",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 8
+      },
+      {
+        "type": "maxLength",
+        "value": 14
+      }
+    ]
+  },
+  {
+    "name": "state",
+    "label": "Ingresar Estado",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Estado",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "municipality",
+    "onlyLettersAndNumber": true,
+    "label": "Ingresar Municipio",
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Municipio",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "location",
+    "label": "Ingresar Direccion",
+    "onlyLettersAndNumber": true,
+    "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
+    "helper": "Direccion",
+    "value": "",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "decagram",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "required"
+      },
+      {
+        "type": "minLength",
+        "value": 3
+      },
+      {
+        "type": "maxLength",
+        "value": 60
+      }
+    ]
+  },
+  {
+    "name": "password",
+    "onlyLettersAndNumber": true,
+    "label": "Ingresa nueva contraseña",
+    "value": "",
+    "secureTextEntry": "true",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "eye",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "minLength",
+        "value": 8
+      },
+      {
+        "type": "maxLength",
+        "value": 14
+      }
+    ]
+  },
+  {
+    "name": "confirmPassword",
+    "onlyLettersAndNumber": true,
+    "label": "Ingresar nuevamente la contraseña",
+    "value": "",
+    "secureTextEntry": "true",
+    "keyboard": "default",
+    "errormessagestyles": "text-red-500",
+    "colorIcon": "white",
+    "iconDirection": "right",
+    "icon": "eye",
+    "customStyle": {
+      "marginVertical": 5
+    },
+    "theme": {
+      "colors": {
+        "placeholder": "white",
+        "text": "white",
+        "primary": "white",
+        "background": "black"
+      }
+    },
+    "validations": [
+      {
+        "type": "minLength",
+        "value": 8
+      },
+      {
+        "type": "maxLength",
+        "value": 14
+      }
+    ]
+  }
+]

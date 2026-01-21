@@ -1,0 +1,36 @@
+[{
+    "name":"pay",
+    "label":"Ingresa el pago",
+    "helper":"Pago",
+    "value":"",
+    "keyboard":"numeric",
+    "errormessagestyles":"text-red-500",
+    "colorIcon":"white",
+    "iconDirection":"right",
+    "icon":"cash",
+    "customStyle":{
+        "marginVertical": 5
+      },
+    "theme":{
+        "colors": {
+          "placeholder": "white",
+          "text": "white",
+          "primary": "white",
+          "background": "black"
+        }
+      },
+    "validations":[
+        {
+            "type":"required"
+        },
+        {
+            "type":"minLength",
+            "value":1
+        },
+        {
+            "type":"maxLength",
+            "value":14
+        }
+    ]
+}
+]

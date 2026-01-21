@@ -1,0 +1,7 @@
+export const IDGASERA = '60fc6e183d097dcce8a1f078';
+export const IDACTIVATORS = '613d01b2a318c42477e59b63';
+export const IDACCOUNTING = '611032746e19b41b409d29ea';
+export const IDMAINTENANCE = '61ca4743ef72101822d04a43';
+export const IDSERIAL = '611032746e19c41b409d29ea';
+export const IDVERIFICATIONUNIT = '6210338c41a7cb3173c27aa4';
+export const IDCLIENT = '60fc6def3d097dcce8a1f077';

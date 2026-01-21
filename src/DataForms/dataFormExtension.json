@@ -1,0 +1,35 @@
+[{
+    "name":"daysToExtend",
+    "label":"Ingresa los dias de extension",
+    "value":"",
+    "keyboard":"numeric",
+    "errormessagestyles":"text-red-500",
+    "colorIcon":"white",
+    "iconDirection":"right",
+    "icon":"access-point",
+    "customStyle":{
+        "marginVertical": 5
+      },
+    "theme":{
+        "colors": {
+          "placeholder": "white",
+          "text": "white",
+          "primary": "white",
+          "background": "black"
+        }
+      },
+    "validations":[
+        {
+            "type":"required"
+        },
+        {
+            "type":"minLength",
+            "value":1
+        },
+        {
+            "type":"maxLength",
+            "value":14
+        }
+    ]
+}
+]

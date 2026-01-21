@@ -1,0 +1,29 @@
+[
+{
+    "name":"fieldFind",
+    "label":"Buscar",
+    "helper":"Buscar",
+    "iconUri":"https://activagas-files.s3.amazonaws.com/buscar.png",
+    "typeFind":true,
+    "value":"",
+    "keyboard":"default",
+    "errormessagestyles":"text-red-500",
+    "colorIcon":"white",
+    "iconDirection":"right",
+    "icon":"magnify",
+    "customStyle":{
+        "marginVertical": 5
+      },
+    "theme":{
+        "colors": {
+          "placeholder": "white",
+          "text": "white",
+          "primary": "white",
+          "background": "black"
+        }
+      },
+    "validations":[
+       
+    ]
+}
+]
