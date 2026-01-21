@@ -17,6 +17,9 @@ This refactoring focused on improving TypeScript safety, code organization, and 
 - **Common styles**: 98+ inline style occurrences now centralized
 - **Factory patterns**: Reusable hook creators for GraphQL services
 - **Base components**: Generic card components for list views
+- **Release APK size**: 65 MB (55% smaller than debug)
+- **FlatList virtualization**: Replaced ScrollView+map with optimized FlatList
+- **Production console removal**: All console.* calls stripped in release builds
 
 ---
 
@@ -104,6 +107,59 @@ Focused on type safety and API layer patterns.
 
 ---
 
+## Production Optimization Phase
+
+Additional optimizations for production readiness.
+
+### PROD Iterations Table
+
+| # | Description | Impact | Commit | Status |
+|---|-------------|--------|--------|--------|
+| PROD-1 | Replace ScrollView+map with FlatList | 🔴 Critical perf fix | 3cd6a09 | ✅ |
+| PROD-2 | FlatList optimizations | Covered by PROD-1 | - | ✅ |
+| PROD-3 | Lazy loading | Skipped (low RN impact) | - | ⏭️ |
+| PROD-4 | Remove console.log | Via babel plugin | 5283c6e | ✅ |
+| PROD-5 | Babel production config | Console removal | 5283c6e | ✅ |
+| PROD-6 | Release build verification | 65MB APK | - | ✅ |
+
+### APK Size Comparison
+
+| Build Type | Size | Notes |
+|------------|------|-------|
+| Debug | 143 MB | Includes dev tools, source maps |
+| Release | 65 MB | **55% reduction** |
+
+### FlatList Optimizations Applied
+
+```typescript
+<FlatList
+  data={data}
+  renderItem={renderItem}
+  keyExtractor={keyExtractor}
+  getItemLayout={getItemLayout}        // O(1) scroll-to-index
+  removeClippedSubviews={true}         // Memory optimization
+  maxToRenderPerBatch={10}             // Smooth scrolling
+  windowSize={5}                       // Memory/performance balance
+  initialNumToRender={10}              // Fast initial render
+  updateCellsBatchingPeriod={50}       // Batched updates
+/>
+```
+
+### Babel Production Config
+
+```javascript
+env: {
+  production: {
+    plugins: [
+      'react-native-paper/babel',      // Tree shaking
+      'transform-remove-console',       // Remove all console.*
+    ],
+  },
+},
+```
+
+---
+
 ## Files Created
 
 ### New Files
@@ -137,9 +193,10 @@ Focused on type safety and API layer patterns.
 
 ## Dependencies
 
-**No dependency changes made during this refactor.**
+### New Dev Dependencies
+- `babel-plugin-transform-remove-console` - Strips console.* in production
 
-Existing dependencies leveraged:
+### Existing Dependencies Leveraged
 - `reselect` (already installed) - Used for createSelector
 - `jwt-decode` (already installed) - Used in authHelpers
 
@@ -247,6 +304,14 @@ import { GenericListCard, CardField } from '../Components/UsersFlatList';
 ## Git Log
 
 ```
+# Production Optimization Phase
+5283c6e perf(build): add babel-plugin-transform-remove-console for production
+3cd6a09 perf(react-native): replace ScrollView+map with optimized FlatList
+
+# Documentation
+dbf3cbf docs: add REFACTOR-LOG.md with complete documentation
+
+# Refactor Phase (Iterations 1-11)
 bef7045 refactor(react): decompose routerValidation with auth helpers
 dc8f198 refactor(react-native): clean up useDataLayer NFC/HCE hook
 5f28630 refactor(react): add base components for list cards
@@ -266,11 +331,17 @@ f08aa04 refactor(graphql): add explicit React import in App.tsx
 
 | Check | Status |
 |-------|--------|
-| All 11 iterations completed | ✅ |
+| All 11 refactor iterations completed | ✅ |
+| Production optimization phase completed | ✅ |
 | TypeScript compiles | ✅ |
 | Metro bundles | ✅ |
-| Android builds | ✅ |
+| Android debug build | ✅ |
+| Android release build | ✅ (65 MB) |
 | App runs on device | ✅ |
+| FlatList virtualization | ✅ |
+| Console removal in production | ✅ |
 | Documentation complete | ✅ |
 
-**Ready for code review and merge.**
+**Total commits**: 14
+**Release APK**: 65 MB (55% smaller than debug)
+**Ready for code review and merge to production.**
