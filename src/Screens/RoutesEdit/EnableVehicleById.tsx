@@ -107,7 +107,7 @@ const EnableVehicleById = (props: any): JSX.Element => {
         </Text>
       </View>
       <View style={{flex: 2, alignItems: 'center'}}>
-        <Switch value={isEnabled} onValueChange={onEnabledSwitch} color="#1C9ADD" />
+        <Switch value={isEnabled} onValueChange={onEnabledSwitch} trackColor={{false: '#767577', true: '#1C9ADD'}} />
         <Button
           disabled={isLoadingMutate}
           loading={isLoadingMutate}
