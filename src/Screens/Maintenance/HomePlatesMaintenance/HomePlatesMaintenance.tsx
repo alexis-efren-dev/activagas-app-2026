@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useCallback, useRef} from 'react';
 import {Dimensions, Text, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import LinearGradient from 'react-native-linear-gradient';
@@ -28,14 +28,23 @@ const AddSerialNumber = (props: any): JSX.Element => {
   } = useQuerySearchBySerialId();
   const [nfcSerial, setNfcSerial] = useState<any>(false);
   const [customJson, setCustomJson] = useState<any>([]);
+  const isInitializedRef = useRef(false);
+  const switchSessionRef = useRef<((enable: boolean) => Promise<void>) | null>(null);
+
+  const terminateWriteCallback = useCallback((data: string) => {
+    if (data && switchSessionRef.current) {
+      setNfcSerial(['serialNumber', data]);
+      switchSessionRef.current(false);
+    }
+  }, []);
+
   const {switchSession, updateProp} = useDataLayer({
-    terminateWrite: (data: string) => {
-      if (data) {
-        setNfcSerial(['serialNumber', data]);
-        switchSession(false);
-      }
-    },
+    terminateWrite: terminateWriteCallback,
   });
+
+  // Keep ref updated with latest switchSession
+  switchSessionRef.current = switchSession;
+
   const {enabled} = useSelector((store: IStore) => store.nfcEnabled);
 
   const buttonInfo = {
@@ -59,16 +68,23 @@ const AddSerialNumber = (props: any): JSX.Element => {
       setCustomJson([...dataFormCreateSerial]);
       setNfcSerial(['serialNumber', '']);
     }
-  }, [content]);
+  }, [content, switchSession, updateProp]);
+
   React.useEffect(() => {
-    if (!dataMutation) {
+    // Only run initialization once when dataMutation is not set
+    if (!dataMutation && !isInitializedRef.current) {
+      isInitializedRef.current = true;
       switchSession(true);
       updateProp('writable', true);
       updateProp('content', 'init');
       setCustomJson([...dataFormCreateSerial]);
       setNfcSerial(['serialNumber', '']);
     }
-  }, [dataMutation]);
+    // Reset the ref when dataMutation becomes truthy then falsy again
+    if (dataMutation) {
+      isInitializedRef.current = false;
+    }
+  }, [dataMutation, switchSession, updateProp]);
 
   return (
     <>

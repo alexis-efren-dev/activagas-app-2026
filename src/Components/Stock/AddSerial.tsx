@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useCallback, useRef} from 'react';
 import {Dimensions, Text, View} from 'react-native';
 import {Button, Card} from 'react-native-paper';
 import ResponsiveImage from 'react-native-responsive-image';
@@ -23,12 +23,22 @@ interface IAdd {
 const AddSerialNumber: React.FC<IAdd> = ({user, navigation}): JSX.Element => {
   const [nfcSerial, setNfcSerial] = useState<any>(false);
   const [customJson, setCustomJson] = useState<any>([]);
+  const switchSessionRef = useRef<((enable: boolean) => Promise<void>) | null>(null);
+
+  const terminateWriteCallback = useCallback((data: string) => {
+    setNfcSerial(['serialNumber', data]);
+    if (switchSessionRef.current) {
+      switchSessionRef.current(false);
+    }
+  }, []);
+
   const {switchSession, updateProp} = useDataLayer({
-    terminateWrite: (data: string) => {
-      setNfcSerial(['serialNumber', data]);
-      switchSession(false);
-    },
+    terminateWrite: terminateWriteCallback,
   });
+
+  // Keep ref updated with latest switchSession
+  switchSessionRef.current = switchSession;
+
   const {enabled} = useSelector((store: IStore) => store.nfcEnabled);
   const {isPending:isLoading} = useMutationCreateSerialNumber();
   const buttonInfo = {

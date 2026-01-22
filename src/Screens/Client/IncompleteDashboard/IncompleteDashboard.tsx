@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {ActivityIndicator, Dimensions, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {Button, IconButton, Title} from 'react-native-paper';
@@ -32,10 +32,13 @@ const IncompleteDashboard = (props: any) => {
     idGas: user.idGas,
   });
   const [nfcSerial, setNfcSerial] = useState<any>(false);
+
+  const terminateWriteCallback = useCallback((dataNfc: string) => {
+    setNfcSerial(dataNfc);
+  }, []);
+
   const {switchSession, updateProp} = useDataLayer({
-    terminateWrite: (dataNfc: string) => {
-      setNfcSerial(dataNfc);
-    },
+    terminateWrite: terminateWriteCallback,
   });
   React.useEffect(() => {
     if (user) {

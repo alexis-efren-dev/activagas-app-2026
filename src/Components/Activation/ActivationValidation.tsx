@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { Dimensions, Text, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import LinearGradient from "react-native-linear-gradient";
@@ -41,26 +41,36 @@ const ActivationValidation: React.FC<IActivation> = (props: any) => {
   const handlerHceSession = useSelector(
     (store: IStore) => store.handlerHceSession
   );
-  const { switchSession, updateProp } = useDataLayer({
-    terminateWrite: (data: string) => {
-      if (
-        data !== "" &&
-        data !== "ACK" &&
-        data !== "NACK" &&
-        data !== "E00" &&
-        data !== "E01" &&
-        data !== "E02" &&
-        data !== "E03"
-      ) {
-        setExtractPlates(["plates", data]);
-        mutateBasic({
-          idGas: user.idGas,
-          idDispatcher: user._id,
+
+  // Refs to access latest values in memoized callback
+  const userRef = useRef<any>(null);
+  const mutateBasicRef = useRef<any>(null);
+
+  const terminateWriteCallback = useCallback((data: string) => {
+    if (
+      data !== "" &&
+      data !== "ACK" &&
+      data !== "NACK" &&
+      data !== "E00" &&
+      data !== "E01" &&
+      data !== "E02" &&
+      data !== "E03"
+    ) {
+      setExtractPlates(["plates", data]);
+      if (mutateBasicRef.current && userRef.current) {
+        mutateBasicRef.current({
+          idGas: userRef.current.idGas,
+          idDispatcher: userRef.current._id,
           serialNumber: data,
         });
       }
-    },
+    }
+  }, []);
+
+  const { switchSession, updateProp } = useDataLayer({
+    terminateWrite: terminateWriteCallback,
   });
+
   const [extractPlates, setExtractPlates] = useState<any>("");
   const dispatch = useDispatch();
   const generalConfigurations = useSelector(
@@ -73,6 +83,11 @@ const ActivationValidation: React.FC<IActivation> = (props: any) => {
   const [controlAlert, setControlAlert] = useState(false);
   const { mutate: mutateBasic, reset: resetBasic } =
     useMutationGetBasicInformation();
+
+  // Keep refs updated with latest values
+  userRef.current = user;
+  mutateBasicRef.current = mutateBasic;
+
   const {
     mutate: mutateAlert,
     isPending: isLoadingAlert,

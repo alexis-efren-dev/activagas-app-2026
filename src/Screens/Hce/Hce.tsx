@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { CommonActions } from "@react-navigation/native";
-import React, { useState } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { Animated, Dimensions, StyleSheet } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useDispatch, useSelector } from "react-redux";
@@ -58,11 +58,18 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
   const dispatch = useDispatch();
   const [content, setContent] = useState<string>("");
 
-  const handlerErrorAlert = (message: string) => {
-    if (serial) {
-      //switchSession(false);
-      updateProp("writable", true);
-      updateProp("content", "");
+  // Refs to access latest values in memoized callbacks
+  const updatePropRef = useRef<any>(null);
+  const mutateGasRefillsRef = useRef<any>(null);
+  const mutateEmergencyActivationRef = useRef<any>(null);
+  const mutateIncompleteKeyRef = useRef<any>(null);
+  const mutateInitialActivationRef = useRef<any>(null);
+  const mutateVinRef = useRef<any>(null);
+
+  const handlerErrorAlert = useCallback((message: string) => {
+    if (serial && updatePropRef.current) {
+      updatePropRef.current("writable", true);
+      updatePropRef.current("content", "");
     }
     dispatch(
       getAlertSuccess({
@@ -73,24 +80,24 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
       })
     );
     setHandlerClosure(true);
-  };
-  const terminateWrite = (data: any) => {
+  }, [serial, dispatch]);
+
+  const terminateWriteCallback = useCallback((data: any) => {
     if (data !== "") {
       if (data === "ACK") {
-        if (serial) {
-          //switchSession(false);
-          updateProp("writable", true);
-          updateProp("content", "");
+        if (serial && updatePropRef.current) {
+          updatePropRef.current("writable", true);
+          updatePropRef.current("content", "");
         }
 
-        if (path === "activationvalidation") {
-          mutateGasRefills(variables);
-        } else if (path === "emergency") {
-          mutateEmergencyActivation(variables);
-        } else if (path === "incompleteClient") {
-          mutateIncompleteKey(variables);
-        } else if (path === "initialActivation") {
-          mutateInitialActivation(variables);
+        if (path === "activationvalidation" && mutateGasRefillsRef.current) {
+          mutateGasRefillsRef.current(variables);
+        } else if (path === "emergency" && mutateEmergencyActivationRef.current) {
+          mutateEmergencyActivationRef.current(variables);
+        } else if (path === "incompleteClient" && mutateIncompleteKeyRef.current) {
+          mutateIncompleteKeyRef.current(variables);
+        } else if (path === "initialActivation" && mutateInitialActivationRef.current) {
+          mutateInitialActivationRef.current(variables);
         } else {
           dispatch(
             getAlertSuccess({
@@ -116,15 +123,18 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
       } else if (data === "E03") {
         handlerErrorAlert("Error de activacion, computadora de gas incorrecta");
       } else if (serial && data.length > 7) {
-        updateProp("writable", true);
-        updateProp("content", "");
-        mutateVin({
-          idGas: user.idGas,
-          idMaintenance: user._id,
-          serialNumber: serial,
-          newVin: data,
-        });
-        //switchSession(false);
+        if (updatePropRef.current) {
+          updatePropRef.current("writable", true);
+          updatePropRef.current("content", "");
+        }
+        if (mutateVinRef.current) {
+          mutateVinRef.current({
+            idGas: user.idGas,
+            idMaintenance: user._id,
+            serialNumber: serial,
+            newVin: data,
+          });
+        }
 
         dispatch(handlerNfcMaintenanceAction("NFC"));
         dispatch(
@@ -138,14 +148,26 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
         setHandlerClosure(true);
       }
     }
-  };
-  const terminate = () => {
-    updateProp("writable", true);
-  };
+  }, [serial, path, variables, user, dispatch, handlerErrorAlert]);
+
+  const terminateCallback = useCallback(() => {
+    if (updatePropRef.current) {
+      updatePropRef.current("writable", true);
+    }
+  }, []);
+
   const { switchSession, updateProp } = useDataLayer({
-    terminate,
-    terminateWrite,
+    terminate: terminateCallback,
+    terminateWrite: terminateWriteCallback,
   });
+
+  // Keep refs updated with latest values
+  updatePropRef.current = updateProp;
+  mutateGasRefillsRef.current = mutateGasRefills;
+  mutateEmergencyActivationRef.current = mutateEmergencyActivation;
+  mutateIncompleteKeyRef.current = mutateIncompleteKey;
+  mutateInitialActivationRef.current = mutateInitialActivation;
+  mutateVinRef.current = mutateVin;
 
   const initAnimation = () => {
     Animated.timing(scrollY, {

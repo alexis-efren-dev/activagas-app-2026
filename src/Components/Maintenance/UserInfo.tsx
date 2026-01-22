@@ -1,5 +1,5 @@
 import {StackNavigationProp} from '@react-navigation/stack';
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {Dimensions, ScrollView, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {
@@ -47,8 +47,13 @@ const UserInfo: React.FC<IUser> = ({
   const [controllerTime, setControllerTime] = React.useState<any>(false);
 
   const keys = useSelector((store: any) => store.key);
+
+  const terminateWriteCallback = useCallback((_data: string) => {
+    // No-op callback - maintained for hook compatibility
+  }, []);
+
   const {switchSession, updateProp} = useDataLayer({
-    terminateWrite: (data: string) => {},
+    terminateWrite: terminateWriteCallback,
   });
   const {data: dataInternal, refetch: refetchInternal} = useQueryGetInternalVin(
     dataInternalVariables,

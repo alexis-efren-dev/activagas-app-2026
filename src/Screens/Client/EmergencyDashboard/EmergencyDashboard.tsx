@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {ActivityIndicator, Dimensions, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {IconButton, Title} from 'react-native-paper';
@@ -20,10 +20,13 @@ const {width, height} = Dimensions.get('screen');
 
 const GetVehicles = (props: any) => {
   const [nfcSerial, setNfcSerial] = useState<any>(false);
+
+  const terminateWriteCallback = useCallback((data: string) => {
+    setNfcSerial(data);
+  }, []);
+
   const {switchSession, updateProp} = useDataLayer({
-    terminateWrite: (data: string) => {
-      setNfcSerial(data);
-    },
+    terminateWrite: terminateWriteCallback,
   });
   const {enabled} = useSelector((store: IStore) => store.nfcEnabled);
   const client = useQueryClient();

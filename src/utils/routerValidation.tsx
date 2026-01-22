@@ -9,7 +9,7 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useQueryClient} from '@tanstack/react-query';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState, useCallback} from 'react';
 import {View, StyleSheet} from 'react-native';
 import {ActivityIndicator} from 'react-native-paper';
 import {useDispatch, useSelector} from 'react-redux';
@@ -72,8 +72,11 @@ const RouterValidation = () => {
   const tokenWithWorkIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const tokenIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // NFC session control
-  const {switchSession, updateProp} = useDataLayer({terminate: () => {}});
+  // NFC session control - memoize callback to prevent infinite loops
+  const terminateCallback = useCallback(() => {
+    // No-op callback - maintained for hook compatibility
+  }, []);
+  const {switchSession, updateProp} = useDataLayer({terminate: terminateCallback});
 
   // Auth state
   const activeSession = useSelector((store: IStore) => store.activeSession);
