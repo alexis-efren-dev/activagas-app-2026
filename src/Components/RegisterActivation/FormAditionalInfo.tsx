@@ -131,7 +131,6 @@ const FormAditionalInfo: React.FC<IPropsAditional> = React.memo(
       isLoading: isLoadingSigned,
       isError,
     } = useQueryGetSignedImages(dataVariables);
-    console.log("EH2",dataSigned)
     const mutation = useMutationAditionalRegister();
     const {data, isPending: isLoading, isSuccess} = mutation;
     const [handlerEnd, setHandlerEnd] = React.useState<any>(true);

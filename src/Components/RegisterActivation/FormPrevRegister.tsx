@@ -67,7 +67,6 @@ const FormPrevRegister: React.FC<IPropsAditional> = React.memo(
       isLoading: isLoadingSigned,
       isError,
     } = useQueryGetSignedImages(dataVariables);
-    console.log("EH3",dataSigned)
     const [handlerEnd, setHandlerEnd] = React.useState<any>(true);
     const dispatch = useDispatch();
     const formRef = useRef<any>(null);

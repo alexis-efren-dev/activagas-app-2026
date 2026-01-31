@@ -104,7 +104,6 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
       data: dataSigned,
       isLoading: isLoadingSigned,
     } = useQueryGetSignedImages(dataVariablesSigned);
-    console.log("EH",dataSigned)
     const handleSubmit = async (data: IData) => {
       let errorInsideActivations = 0;
       emergencyActivations.map((dataActivation: any) => {
