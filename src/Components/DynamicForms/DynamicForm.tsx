@@ -24,6 +24,7 @@ interface IDynamicForm {
   showButton?: any;
   isFetching?: any;
   setExtractData?: any;
+  formRef?: React.MutableRefObject<any>;
   [x: string]: any;
 }
 
@@ -51,6 +52,7 @@ export const DynamicForm: React.FC<IDynamicForm> = ({
   showButton = true,
   isFetching = false,
   setExtractData,
+  formRef,
   children,
 }) => {
   // Memoize initialValues and validationSchema to prevent recalculation on every render
@@ -121,6 +123,10 @@ export const DynamicForm: React.FC<IDynamicForm> = ({
       initialValues={initialValues}
       onSubmit={onSubmit}>
       {formik => {
+        if (formRef) {
+          formRef.current = formik;
+        }
+
         const getValues = formik.values != formik.initialValues;
         const getErrors = !formik.isValid;
         const getDisabled =

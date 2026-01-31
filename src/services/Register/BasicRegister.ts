@@ -10,7 +10,7 @@ const TESTMUTATION = gql`
 export const useMutationRegister = () => {
   const dispatch = useDispatch();
   return useGraphQlMutation(TESTMUTATION, 'registerResolver', {
-    onSuccess: async (data: any, variables: any, _context: unknown) => {
+    onSuccess: async (data: any, _variables: any, _context: unknown) => {
       dispatch(handlerFormRegisterAction(data.registerResolver));
     },
   });

@@ -1,9 +1,16 @@
-import { StackNavigationProp } from '@react-navigation/stack';
+import {StackNavigationProp} from '@react-navigation/stack';
 import React from 'react';
-import { Dimensions, View, StyleSheet } from 'react-native';
-import { Card, IconButton, Paragraph, Title } from 'react-native-paper';
+import {
+  Dimensions,
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const { height, width } = Dimensions.get('screen');
+const {width} = Dimensions.get('screen');
 
 interface ICard {
   item: any;
@@ -13,57 +20,108 @@ interface ICard {
   idGas?: any;
 }
 
-const CardFlatList: React.FC<ICard> = React.memo(({ item, toScreen, navigation, serialNumber, idGas }) => {
-  return (
-    <View style={styles.container}>
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title style={styles.title}>Nombre del cliente</Title>
-          <Paragraph style={styles.text}>{item.firstName}</Paragraph>
-          <Title style={styles.title}>Teléfono</Title>
-          <Paragraph style={styles.text}>{item.cellPhone}</Paragraph>
-
-          <View style={styles.iconContainer}>
-            <View style={styles.regularView} />
-            <IconButton
-              icon="arrow-right-bold"
-              iconColor={'#1C9ADD'}
-              size={40}
-              onPress={() => {
-                navigation.navigate(toScreen, {
-                  item,
-                  serialNumber,
-                  idGasFull: idGas,
-                });
-              }}
-            />
+const CardFlatList: React.FC<ICard> = React.memo(
+  ({item, toScreen, navigation, serialNumber, idGas}) => {
+    return (
+      <TouchableOpacity
+        style={styles.container}
+        onPress={() => {
+          navigation.navigate(toScreen, {
+            item,
+            serialNumber,
+            idGasFull: idGas,
+          });
+        }}
+        activeOpacity={0.85}>
+        <View style={styles.card}>
+          {/* Avatar */}
+          <View style={styles.avatarContainer}>
+            <View style={styles.avatar}>
+              <Icon name="account" size={28} color="#1C9ADD" />
+            </View>
           </View>
-        </Card.Content>
-      </Card>
-    </View>
-  );
-});
+
+          {/* Content */}
+          <View style={styles.content}>
+            <Text style={styles.name} numberOfLines={1}>
+              {item.firstName || 'Cliente'}
+            </Text>
+            <View style={styles.phoneRow}>
+              <Icon name="phone" size={14} color="#666" />
+              <Text style={styles.phone}>{item.cellPhone || 'Sin teléfono'}</Text>
+            </View>
+          </View>
+
+          {/* Arrow */}
+          <View style={styles.arrowContainer}>
+            <Icon name="chevron-right" size={24} color="#1C9ADD" />
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
-  regularView:{flex:1},
   container: {
-    marginBottom: 5,
+    marginBottom: 10,
   },
   card: {
-    backgroundColor: 'white',
-    elevation: 5,
-    borderRadius: (width * 0.7) / (height / 36),
-  },
-  title: {
-    color: '#1C9ADD',
-  },
-  text: {
-    color: 'black',
-  },
-  iconContainer: {
-    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  avatarContainer: {
+    marginRight: 14,
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#E3F2FD',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    flex: 1,
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 4,
+  },
+  phoneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  phone: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  arrowContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E3F2FD',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

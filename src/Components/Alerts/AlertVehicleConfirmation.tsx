@@ -116,7 +116,6 @@ const AlertVehicleConfirmation: React.FC<IAlert> = ({
               style={{flex: 1, margin: 2}}
               buttonColor="#1C9ADD"
               onPress={() => {
-               console.log("HA",dataMutation)
                 /*
                 if(dataMutation){
                   dispatch(handlerNfcMaintenanceAction(''));

@@ -33,7 +33,7 @@ export const useGraphQlMutation = (
       customOptions = {
         ...options,
         onSuccess: (data: any) => {
-          const message: any = Object.values(data)[0];
+          const message: any = data ? Object.values(data)[0] : '';
           dispatch(
             getAlertSuccess({
               message,
@@ -59,7 +59,8 @@ export const useGraphQlMutation = (
         );
       },
       onSuccess: (data: any) => {
-        const message: any = Object.values(data)[0];
+    
+        const message: any = data ? Object.values(data)[0] : '';
         dispatch(
           getAlertSuccess({
             message,

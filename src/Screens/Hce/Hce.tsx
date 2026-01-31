@@ -40,7 +40,6 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
     serial,
     variables,
   } = route.params;
-  console.log("la key", key);
   const scrollY: any = React.useRef(new Animated.Value(0)).current;
   const {
     mutate: mutateInitialActivation,
