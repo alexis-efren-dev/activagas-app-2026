@@ -1,6 +1,8 @@
 import gql from 'graphql-tag';
-import {useGraphQlQuery} from '../../hooks/useGraphQlQuery';
-const EDITACTIVATE = gql`
+import {createQueryHook} from '../createServiceHooks';
+import type {GetClientsResolverResponse} from '../../types/graphql';
+
+const QUERY = gql`
   query getClientsResolver($variables: TypesFiltersEditActivatorsResolver!) {
     getClientsResolver(variables: $variables) {
       data {
@@ -13,11 +15,19 @@ const EDITACTIVATE = gql`
     }
   }
 `;
-export const useQueryGetClients = (variables: any) => {
-  return useGraphQlQuery(
-    'getClientsResolver',
-    EDITACTIVATE,
-    variables,
-    'getClientsResolver',
-  );
-};
+
+interface GetClientsVariables {
+  idGas: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+/**
+ * Query hook for fetching clients list
+ * Returns typed response with GetClientsResolverResponse
+ */
+export const useQueryGetClients = createQueryHook<
+  GetClientsResolverResponse,
+  GetClientsVariables
+>('getClientsResolver', QUERY, 'getClientsResolver');

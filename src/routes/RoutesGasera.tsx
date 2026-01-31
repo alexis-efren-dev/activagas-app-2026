@@ -1,10 +1,13 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
+import {Platform, StyleSheet} from 'react-native';
 import 'react-native-gesture-handler';
-import TabBarIcon from '../Components/Shared/TabBarIcon/TabBarIcon';
+import {TabBarIconModern} from '../Components/Shared/TabBarIcon/TabBarIcon';
 import Logout from '../Screens/Logout/Logout';
 import ScannerDevice from '../Screens/ScannerDevice/ScannerDevice';
+
 const Tab = createBottomTabNavigator();
+
 const RoutesGasera = () => {
   return (
     <NavigationContainer>
@@ -12,28 +15,50 @@ const RoutesGasera = () => {
         screenOptions={() => ({
           headerShown: false,
           tabBarShowLabel: false,
-          tabBarStyle: {
-            borderTopWidth: 0,
-            elevation: 0,
-            height: 100,
-          },
+          tabBarStyle: styles.tabBar,
         })}>
         <Tab.Screen
           name="Dashboard"
           component={ScannerDevice}
           options={{
-            tabBarIcon: () => TabBarIcon('home-outline'),
+            tabBarIcon: ({focused}) => (
+              <TabBarIconModern icon="home-outline" label="Inicio" focused={focused} />
+            ),
           }}
         />
         <Tab.Screen
           name="Dashboard2"
           component={Logout}
           options={{
-            tabBarIcon: () => TabBarIcon('logout'),
+            tabBarIcon: ({focused}) => (
+              <TabBarIconModern icon="logout" label="Salir" focused={focused} />
+            ),
           }}
         />
       </Tab.Navigator>
     </NavigationContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 0,
+    height: Platform.OS === 'ios' ? 85 : 65,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+    paddingTop: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: -2},
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+});
+
 export default RoutesGasera;

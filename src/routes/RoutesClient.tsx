@@ -4,9 +4,9 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import React from 'react';
-import {AppState} from 'react-native';
+import {AppState, Platform} from 'react-native';
 import 'react-native-gesture-handler';
-import TabBarIcon from '../Components/Shared/TabBarIcon/TabBarIcon';
+import {TabBarIconModern} from '../Components/Shared/TabBarIcon/TabBarIcon';
 import {useNfcValidation} from '../hooks/useNfcValidation';
 import RouterClient from '../routes/RouterClient/Router';
 import DashboardClient from '../Screens/Client/Dashboard/DashboardClient';
@@ -15,8 +15,10 @@ import Support from '../Screens/Client/Support/Support';
 import ScannerScreenHce from '../Screens/Hce/Hce';
 import Logout from '../Screens/Logout/Logout';
 import RegisterActivation from './RoutesActivatorRegister/Router';
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
 const TabNaviNAvi: React.FC = (): JSX.Element => {
   return (
     <Tab.Navigator
@@ -26,29 +28,60 @@ const TabNaviNAvi: React.FC = (): JSX.Element => {
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
           borderTopWidth: 0,
-          elevation: 0,
-          height: 100,
+          backgroundColor: '#FFFFFF',
+          height: Platform.OS === 'android' ? 65 : 85,
+          paddingBottom: Platform.OS === 'android' ? 8 : 25,
+          paddingTop: 8,
+          ...Platform.select({
+            ios: {
+              shadowColor: '#000',
+              shadowOffset: {width: 0, height: -2},
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+            },
+            android: {
+              elevation: 8,
+            },
+          }),
         },
       })}>
       <Tab.Screen
         name="Dashboard"
         component={DashboardClient}
         options={{
-          tabBarIcon: () => TabBarIcon('home-outline'),
+          tabBarIcon: ({focused}) => (
+            <TabBarIconModern
+              icon="home-outline"
+              label="Inicio"
+              focused={focused}
+            />
+          ),
         }}
       />
       <Tab.Screen
         name="Support"
         component={Support}
         options={{
-          tabBarIcon: () => TabBarIcon('chat-outline'),
+          tabBarIcon: ({focused}) => (
+            <TabBarIconModern
+              icon="chat-outline"
+              label="Soporte"
+              focused={focused}
+            />
+          ),
         }}
       />
       <Tab.Screen
         name="Dashboard2"
         component={Logout}
         options={{
-          tabBarIcon: () => TabBarIcon('logout'),
+          tabBarIcon: ({focused}) => (
+            <TabBarIconModern
+              icon="logout"
+              label="Salir"
+              focused={focused}
+            />
+          ),
         }}
       />
       <Tab.Screen

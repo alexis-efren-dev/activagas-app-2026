@@ -1,13 +1,17 @@
-/* eslint-disable @typescript-eslint/no-shadow */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-native/no-inline-styles */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React, {useState} from 'react';
-import {Dimensions, Text, View} from 'react-native';
+import React, {useState, useRef} from 'react';
+import {
+  Dimensions,
+  Text,
+  View,
+  StyleSheet,
+  Platform,
+  TouchableOpacity,
+  Animated,
+  ActivityIndicator,
+} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import LinearGradient from 'react-native-linear-gradient';
-import {Button} from 'react-native-paper';
-import ResponsiveImage from 'react-native-responsive-image';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useDispatch, useSelector} from 'react-redux';
 import dataFormRegisterAditional from '../../DataForms/dataFormPrevUser.json';
 
@@ -16,13 +20,13 @@ import {useQueryGetSignedImages} from '../../services/Register/useQueryGetSigned
 import CreateServices from '../Accounting/CreateServices';
 import AlertConfirmVehicleRegister from '../Alerts/AlertConfirmVehicleRegister';
 import {DynamicForm} from '../DynamicForms/DynamicForm';
-import {makeStyles} from '../Login/customStyles/FormLogin';
-import {makeStylesFormRegisterActivation} from './makeStyles';
 import RegisterImages from './RegisterImages';
-import { getAlertSuccess } from '../../redux/states/alertsReducerState';
-import { handlerFormRegisterAction } from '../../redux/states/handlerFormRegisterSlice';
-import { IStore } from '../../redux/store';
-const {height, width} = Dimensions.get('screen');
+import {getAlertSuccess} from '../../redux/states/alertsReducerState';
+import {handlerFormRegisterAction} from '../../redux/states/handlerFormRegisterSlice';
+import {IStore} from '../../redux/store';
+
+const {width} = Dimensions.get('screen');
+
 interface IPropsAditional {
   serialNumber: any;
   idUser: any;
@@ -30,6 +34,7 @@ interface IPropsAditional {
   maintenances: any;
   navigation: any;
 }
+
 interface IData {
   brand: string;
   model: string;
@@ -40,6 +45,7 @@ interface IData {
   tankSerial: string;
   inactivityDays: string;
 }
+
 const FormPrevRegister: React.FC<IPropsAditional> = React.memo(
   ({serialNumber, idUser, services, maintenances, navigation}): JSX.Element => {
     const [tankSignedUri, setTankSignedUri] = React.useState<any>(false);
@@ -63,6 +69,28 @@ const FormPrevRegister: React.FC<IPropsAditional> = React.memo(
     } = useQueryGetSignedImages(dataVariables);
     const [handlerEnd, setHandlerEnd] = React.useState<any>(true);
     const dispatch = useDispatch();
+    const formRef = useRef<any>(null);
+    const pulseAnim = useRef(new Animated.Value(1)).current;
+
+    React.useEffect(() => {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.03,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ]),
+      );
+      pulse.start();
+      return () => pulse.stop();
+    }, [pulseAnim]);
+
     const dispatchErrors = (message: string) => {
       dispatch(
         getAlertSuccess({
@@ -84,7 +112,7 @@ const FormPrevRegister: React.FC<IPropsAditional> = React.memo(
     } = useSelector((store: IStore) => store.services);
     const mutation = useMutationAditionalVehicle();
     const [endDateContract, setEndDateContract] = React.useState<any>('');
-    const {data, isPending:isLoading, isSuccess} = mutation;
+    const {data, isPending: isLoading, isSuccess} = mutation;
     const [handleShow, setHandleShow] = React.useState<any>(false);
     const [allGas, setAllGas] = React.useState<boolean>(false);
     const [emergencyActivations, setEmergencyActivations] = React.useState<any>(
@@ -238,11 +266,8 @@ const FormPrevRegister: React.FC<IPropsAditional> = React.memo(
       mutation.reset();
     }
     const buttonInfo = {
-      style: makeStyles.stylesButton,
-      // icon: 'arrow-right-bold',
-      contentStyle: makeStyles.stylesButtonContent,
-      buttonColor: '#1C9ADD',
-      mode: 'contained',
+      style: {display: 'none'},
+      contentStyle: {display: 'none'},
     };
     const [isSwitchOn, setIsSwitchOn] = React.useState(false);
     const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
@@ -332,6 +357,7 @@ const FormPrevRegister: React.FC<IPropsAditional> = React.memo(
       }
     };
     React.useEffect(() => {
+      
       if (idUser?.idClientSigned) {
         setDataVariables({_id: idUser.idClientSigned, serialNumber});
       }
@@ -341,6 +367,16 @@ const FormPrevRegister: React.FC<IPropsAditional> = React.memo(
         refetch();
       }
     }, [dataVariables]);
+
+    // Log signed URLs when received
+    React.useEffect(() => {
+      if (dataSigned) {
+     
+     //   console.log('=== getSignedImagesResolver URLs (Ya soy cliente) ===');
+     //   console.log(JSON.stringify(dataSigned.getSignedImagesResolver, null, 2));
+     //   console.log('=====================================================');
+      }
+    }, [dataSigned]);
     React.useEffect(() => {
       if (sunday) {
         const replaceDays = timeOff.filter((previous: any) => previous != 0);
@@ -368,43 +404,45 @@ const FormPrevRegister: React.FC<IPropsAditional> = React.memo(
         });
       }
     }, [isSuccess]);
-    return (
-      <LinearGradient
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          width,
-        }}
-        colors={['#074169', '#019CDE', '#ffffff']}>
-        <KeyboardAwareScrollView style={{flex: 1}}>
-          <View style={{flex: 1, marginTop: 40, alignItems: 'center'}}>
-            <ResponsiveImage
-              initHeight={height / 6}
-              initWidth={width * 0.4}
-              resizeMode="contain"
-              source={{
-                uri: 'https://activagas-files.s3.amazonaws.com/registerInitialIcon.png',
-              }}
-            />
-          </View>
 
-          <View
-            style={{
-              marginBottom: 10,
-              alignItems: 'center',
-            }}>
-            <Text style={{color: '#ffffff', fontSize: 23, fontWeight: 'bold'}}>
-              INGRESAR DATOS
+    const isBusy = isLoading || isLoadingS3;
+
+    return (
+      <LinearGradient style={styles.container} colors={['#074169', '#019CDE']}>
+        <KeyboardAwareScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerIconContainer}>
+              <Icon name="car" size={36} color="#1C9ADD" />
+            </View>
+            <Text style={styles.headerTitle}>Ingresar Datos</Text>
+            <Text style={styles.headerSubtitle}>
+              Completa la información del vehículo
             </Text>
           </View>
 
-          <View style={{flex: 2, alignItems: 'center', width}}>
+          {/* Client Info Badge */}
+          <View style={styles.clientBadge}>
+            <View style={styles.clientAvatarContainer}>
+              <Icon name="account-check" size={18} color="#4CAF50" />
+            </View>
+            <View style={styles.clientInfoContainer}>
+              <Text style={styles.clientName}>{idUser.firstName || 'Cliente'}</Text>
+              <Text style={styles.clientPhone}>{idUser.cellPhone || ''}</Text>
+            </View>
+          </View>
+
+          {/* Content */}
+          <View style={styles.content}>
             <AlertConfirmVehicleRegister
               setShow={setHandleShow}
               show={handleShow}
               mutation={handleSent}
             />
+
+            {/* Register Images View */}
             <View style={{display: isRegisterImages ? 'flex' : 'none'}}>
               <RegisterImages
                 tankSignedUri={tankSignedUri}
@@ -423,6 +461,7 @@ const FormPrevRegister: React.FC<IPropsAditional> = React.memo(
               />
             </View>
 
+            {/* Create Services View */}
             <View style={{display: isGeneratedServices ? 'flex' : 'none'}}>
               <CreateServices
                 endDateContract={endDateContract}
@@ -448,54 +487,118 @@ const FormPrevRegister: React.FC<IPropsAditional> = React.memo(
                 onWithMileage={onWithMileage}
               />
             </View>
+
+            {/* Main Form View */}
             <View
               style={{
                 display:
                   isGeneratedServices || isRegisterImages ? 'none' : 'flex',
                 alignItems: 'center',
+                width: width * 0.9,
               }}>
+              {/* Form */}
               <DynamicForm
                 onSubmit={handleSubmit}
-                isLoading={isLoading || isLoadingS3}
+                isLoading={isBusy}
                 json={dataFormRegisterAditional}
-                labelSubmit="Crear"
-                buttonProps={buttonInfo}>
-                <Button
-                  style={{marginVertical: 10}}
-                  mode="contained"
-                  buttonColor="#1C9ADD"
-                  onPress={() => {
-                    setIsGeneratedServices(true);
-                  }}>
-                  Generar Servicios
-                </Button>
-                <Button
-                  style={{
-                    marginVertical: 10,
-                    display: dataSigned ? 'flex' : 'none',
-                  }}
-                  mode="contained"
-                  buttonColor="#1C9ADD"
-                  onPress={() => {
-                    setIsRegisterImages(true);
-                  }}>
-                  Registrar imageness
-                </Button>
-                <Button
-                  disabled={handlerEnd}
-                  style={{marginBottom: 20}}
-                  mode="contained"
-                  buttonColor="#1C9ADD"
-                  onPress={() => {
-                    dispatch(handlerFormRegisterAction(false));
-                    navigation.navigate('Register', {});
-                  }}>
-                  Terminar
-                </Button>
-              </DynamicForm>
+                labelSubmit=""
+                buttonProps={buttonInfo}
+                showButton={false}
+                formRef={formRef}
+              />
 
-              <Text style={makeStylesFormRegisterActivation.textCondition}>
-                *Los campos con el asterisco, son obligatorios.
+              {/* Action Buttons */}
+              <View style={styles.actionButtonsContainer}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => setIsGeneratedServices(true)}
+                  activeOpacity={0.8}>
+                  <LinearGradient
+                    style={styles.actionButtonGradient}
+                    colors={['#1C9ADD', '#0D7ABC']}
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 1}}>
+                    <Icon name="cog" size={20} color="#FFFFFF" />
+                    <Text style={styles.actionButtonText}>Generar Servicios</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                {dataSigned && (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => setIsRegisterImages(true)}
+                    activeOpacity={0.8}>
+                    <LinearGradient
+                      style={styles.actionButtonGradient}
+                      colors={['#FF9800', '#F57C00']}
+                      start={{x: 0, y: 0}}
+                      end={{x: 1, y: 1}}>
+                      <Icon name="camera" size={20} color="#FFFFFF" />
+                      <Text style={styles.actionButtonText}>
+                        Registrar Imágenes
+                      </Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Submit Button */}
+              <Animated.View
+                style={[
+                  styles.buttonWrapper,
+                  {transform: [{scale: pulseAnim}]},
+                ]}>
+                <TouchableOpacity
+                  style={[styles.primaryButton, isBusy && styles.buttonDisabled]}
+                  onPress={() => formRef.current?.handleSubmit()}
+                  disabled={isBusy}
+                  activeOpacity={0.8}>
+                  <LinearGradient
+                    style={styles.buttonGradient}
+                    colors={isBusy ? ['#666', '#888'] : ['#4CAF50', '#388E3C']}
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 1}}>
+                    {isBusy ? (
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                    ) : (
+                      <Icon name="check" size={22} color="#FFFFFF" />
+                    )}
+                    <Text style={styles.buttonText}>
+                      {isBusy ? 'Procesando...' : 'Crear Registro'}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </Animated.View>
+
+              {/* Finish Button */}
+              <TouchableOpacity
+                style={[
+                  styles.secondaryButton,
+                  handlerEnd && styles.buttonDisabledSecondary,
+                ]}
+                disabled={handlerEnd}
+                onPress={() => {
+                  dispatch(handlerFormRegisterAction(false));
+                  navigation.navigate('Register', {});
+                }}
+                activeOpacity={0.8}>
+                <Icon
+                  name="check-circle"
+                  size={20}
+                  color={handlerEnd ? '#999' : '#4CAF50'}
+                />
+                <Text
+                  style={[
+                    styles.finishButtonText,
+                    handlerEnd && styles.finishButtonTextDisabled,
+                  ]}>
+                  Terminar
+                </Text>
+              </TouchableOpacity>
+
+              {/* Note */}
+              <Text style={styles.requiredNote}>
+                * Los campos con asterisco son obligatorios
               </Text>
             </View>
           </View>
@@ -504,4 +607,214 @@ const FormPrevRegister: React.FC<IPropsAditional> = React.memo(
     );
   },
 );
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingBottom: 40,
+  },
+  header: {
+    alignItems: 'center',
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 24,
+  },
+  headerIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 4},
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.85)',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  clientBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    marginBottom: 24,
+    gap: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  clientAvatarContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E8F5E9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  clientInfoContainer: {
+    flex: 1,
+  },
+  clientName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  clientPhone: {
+    fontSize: 13,
+    color: '#666',
+  },
+  content: {
+    width: width,
+    alignItems: 'center',
+  },
+  actionButtonsContainer: {
+    width: '100%',
+    gap: 12,
+    marginBottom: 16,
+  },
+  actionButton: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  actionButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    gap: 10,
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  primaryButton: {
+    width: width * 0.7,
+    borderRadius: 16,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4CAF50',
+        shadowOffset: {width: 0, height: 4},
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  buttonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    gap: 10,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    width: width * 0.7,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    marginTop: 16,
+    gap: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  buttonDisabledSecondary: {
+    opacity: 0.5,
+  },
+  finishButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#4CAF50',
+  },
+  finishButtonTextDisabled: {
+    color: '#999',
+  },
+  requiredNote: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginTop: 20,
+    textAlign: 'center',
+  },
+});
+
 export default FormPrevRegister;

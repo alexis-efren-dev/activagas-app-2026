@@ -1,29 +1,38 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
-import {ActivityIndicator, Dimensions, Text, View} from 'react-native';
+import React, {useState, useCallback} from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  Text,
+  View,
+  StyleSheet,
+  Platform,
+  TouchableOpacity,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {IconButton, Title} from 'react-native-paper';
-import ResponsiveImage from 'react-native-responsive-image';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useDispatch, useSelector} from 'react-redux';
 import UsersFlatList from '../../../Components/UsersFlatList/UsersFlatList';
 
 import {useNavigation} from '@react-navigation/native';
 import {useQueryEmergencyActivationsClient} from '../../../services/Emergency/useQueryEmergencyActivationsClient';
 import useDataLayer from '../../../hooks/useDataLayer';
-import { currentPlatesAction } from '../../../redux/states/currentPlatesSlice';
-import { routesAction } from '../../../redux/states/routesSlice';
-import { IStore } from '../../../redux/store';
-import { useQueryClient } from '@tanstack/react-query';
+import {currentPlatesAction} from '../../../redux/states/currentPlatesSlice';
+import {routesAction} from '../../../redux/states/routesSlice';
+import {IStore} from '../../../redux/store';
+import {useQueryClient} from '@tanstack/react-query';
 
-const {width, height} = Dimensions.get('screen');
+const {width} = Dimensions.get('screen');
 
-const GetVehicles = (props: any) => {
+const EmergencyDashboard = (props: any) => {
   const [nfcSerial, setNfcSerial] = useState<any>(false);
+
+  const terminateWriteCallback = useCallback((data: string) => {
+    setNfcSerial(data);
+  }, []);
+
   const {switchSession, updateProp} = useDataLayer({
-    terminateWrite: (data: string) => {
-      setNfcSerial(data);
-    },
+    terminateWrite: terminateWriteCallback,
   });
   const {enabled} = useSelector((store: IStore) => store.nfcEnabled);
   const client = useQueryClient();
@@ -32,7 +41,7 @@ const GetVehicles = (props: any) => {
   const userRedux = useSelector((store: IStore) => store.loggedUser);
   const currentPlates = useSelector((store: IStore) => store.currentPlates);
   const [plates, setPlates] = useState('');
-  const [infoVehicle, setInfoVehicle] = React.useState<any>(false);
+  const [infoVehicle, setInfoVehicle] = React.useState<any>(null);
   const [dataVariables, setDataVariables] = React.useState<any>({
     current: 1,
     limit: 2,
@@ -68,6 +77,7 @@ const GetVehicles = (props: any) => {
       }));
     }
   }, [userRedux, infoVehicle, nfcSerial, plates]);
+
   React.useEffect(() => {
     if (dataVariables.idGas !== '') {
       refetch();
@@ -76,161 +86,438 @@ const GetVehicles = (props: any) => {
   }, [dataVariables]);
 
   React.useEffect(() => {
-    if (props) {
-      if (props.route) {
-        if (props.route.params) {
-          if (props.route.params.item) {
-            setInfoVehicle(props.route.params.item);
-            setPlates(props.route.params.item.plates);
-          } else {
-            setInfoVehicle('');
-          }
-        } else {
-          setPlates(currentPlates.plates);
-        }
-      }
+    if (props?.route?.params?.item) {
+      setInfoVehicle(props.route.params.item);
+      setPlates(props.route.params.item.plates);
+    } else if (props?.route?.params) {
+      setInfoVehicle(false);
+    } else if (currentPlates.plates) {
+      setPlates(currentPlates.plates);
+      setInfoVehicle(true);
     }
   }, [props]);
+
   React.useEffect(() => {
     switchSession(true);
     updateProp('writable', true);
     setNfcSerial(false);
     return () => {
-      client.removeQueries({queryKey:['getEmergencyVehicleResolver']});
+      client.removeQueries({queryKey: ['getEmergencyVehicleResolver']});
       updateProp('writable', false);
       setNfcSerial(false);
     };
   }, []);
 
-  if (isLoading) {
+  const handleGoBack = () => {
+    dispatch(currentPlatesAction(''));
+    dispatch(routesAction(''));
+    navigation.goBack();
+    navigation.goBack();
+  };
+
+  // Show loading while determining vehicle info
+  if (infoVehicle === null || isLoading) {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <ActivityIndicator animating={true} color={'red'} />
-      </View>
+      <LinearGradient style={styles.container} colors={['#074169', '#019CDE']}>
+        <View style={styles.loadingContainer}>
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#E91E63" />
+            <Text style={styles.loadingText}>Buscando activaciones...</Text>
+          </View>
+        </View>
+      </LinearGradient>
     );
   }
-  if (error || infoVehicle === '') {
+
+  if (error || infoVehicle === false) {
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: 'white',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <IconButton icon="water-boiler-alert" iconColor={'black'} size={80} />
-        <Title>No se encontraron estas placas</Title>
-        <View style={{justifyContent: 'center'}}>
-          <IconButton
-            icon="arrow-left-bold"
-            iconColor="#000"
-            size={50}
-            onPress={() => {
-              dispatch(currentPlatesAction(''));
-              dispatch(routesAction(''));
-              navigation.goBack();
-              navigation.goBack();
-            }}
-          />
+      <LinearGradient style={styles.container} colors={['#074169', '#019CDE']}>
+        <View style={styles.errorContainer}>
+          <View style={styles.errorCard}>
+            <View style={styles.errorIconContainer}>
+              <Icon name="car-off" size={48} color="#E53935" />
+            </View>
+            <Text style={styles.errorTitle}>Placas No Encontradas</Text>
+            <Text style={styles.errorText}>
+              No se encontraron vehículos con{'\n'}las placas proporcionadas.
+            </Text>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleGoBack}
+              activeOpacity={0.8}>
+              <Icon name="arrow-left" size={20} color="#1C9ADD" />
+              <Text style={styles.backButtonText}>Volver</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </LinearGradient>
     );
   }
 
   return (
-    <LinearGradient
-      style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
-      colors={['#074169', '#019CDE', '#ffffff']}>
-      {isLoading ? (
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <ActivityIndicator animating={true} color={'red'} />
+    <LinearGradient style={styles.container} colors={['#074169', '#019CDE']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerIconContainer}>
+          <Icon name="alarm-light" size={36} color="#E91E63" />
+        </View>
+        <Text style={styles.headerTitle}>Activaciones de Emergencia</Text>
+        <Text style={styles.headerSubtitle}>
+          {data
+            ? 'Selecciona una activación disponible'
+            : 'Acerca tu dispositivo al equipo'}
+        </Text>
+      </View>
+
+      {!data ? (
+        /* NFC Prompt */
+        <View style={styles.nfcPromptContainer}>
+          <View style={styles.nfcCard}>
+            <View style={styles.nfcIconContainer}>
+              <Icon name="nfc" size={64} color="#E91E63" />
+            </View>
+            <Text style={styles.nfcTitle}>Lectura NFC</Text>
+            <Text style={styles.nfcText}>
+              Acerca tu dispositivo al equipo del vehículo para buscar las
+              placas automáticamente.
+            </Text>
+
+            <View style={styles.nfcBadge}>
+              <Icon name="cellphone-nfc" size={18} color="#4CAF50" />
+              <Text style={styles.nfcBadgeText}>NFC Activo</Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={handleGoBack}
+            activeOpacity={0.8}>
+            <Icon name="close" size={20} color="#E53935" />
+            <Text style={styles.cancelButtonText}>Cancelar</Text>
+          </TouchableOpacity>
         </View>
       ) : (
-        <>
-          <View style={{marginTop: 30}}>
-            <ResponsiveImage
-              initHeight={height / 7}
-              initWidth={width * 0.8}
-              resizeMode={'contain'}
-              source={{
-                uri: 'https://activagas-files.s3.amazonaws.com/vehicle.png',
-              }}
-            />
-          </View>
-          <View
-            style={{
-              width: width,
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginTop: height / 10,
-            }}>
-            {data ? (
-              <Text
-                style={{color: '#ffffff', fontSize: 23, fontWeight: 'bold'}}>
-                ACTIVACIONES DISPONIBLES
-              </Text>
-            ) : (
-              <>
-                <Text
-                  style={{color: '#ffffff', fontSize: 23, fontWeight: 'bold'}}>
-                  ACERCA EL DISPOSITIVO PARA LA BUSQUEDA DE PLACAS.
-                </Text>
-                <View style={{justifyContent: 'center'}}>
-                  <IconButton
-                    icon="arrow-left-bold"
-                    iconColor="#fff"
-                    size={50}
-                    onPress={() => {
-                      dispatch(currentPlatesAction(''));
-                      dispatch(routesAction(''));
-                      navigation.goBack();
-                      navigation.goBack();
-                    }}
-                  />
-                </View>
-              </>
-            )}
+        /* Activations List */
+        <View style={styles.listContainer}>
+          {/* Status Badge */}
+          <View style={styles.statusBadge}>
+            <Icon name="check-circle" size={18} color="#4CAF50" />
+            <Text style={styles.statusBadgeText}>
+              {data.getEmergencyVehicleResolver.total} activaciones disponibles
+            </Text>
           </View>
 
           {enabled ? (
-            <View
-              style={{
-                flex: 2,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              {data ? (
-                <UsersFlatList
-                  navigation={props.navigation}
-                  isFetching={isFetching}
-                  data={data.getEmergencyVehicleResolver.data}
-                  limitPerPage={2}
-                  toScreen={'useemergencyactivation'}
-                  setDataVariables={setDataVariables}
-                  dataVariables={dataVariables}
-                  isEmergencyClient={true}
-                  totalItems={data.getEmergencyVehicleResolver.total}
-                />
-              ) : null}
+            <View style={styles.flatListContainer}>
+              <UsersFlatList
+                navigation={props.navigation}
+                isFetching={isFetching}
+                data={data.getEmergencyVehicleResolver.data}
+                limitPerPage={2}
+                toScreen={'useemergencyactivation'}
+                setDataVariables={setDataVariables}
+                dataVariables={dataVariables}
+                isEmergencyClient={true}
+                totalItems={data.getEmergencyVehicleResolver.total}
+              />
             </View>
           ) : (
-            <View
-              style={{
-                width: width,
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginTop: height / 10,
-              }}>
-              <Text
-                style={{color: '#ffffff', fontSize: 23, fontWeight: 'bold'}}>
-                PARA HACER USO DE ESTE MODULO, NECESITAS ACTIVAR EL NFC DE TU
-                DISPOSITIVO
+            <View style={styles.nfcDisabledCard}>
+              <Icon name="nfc-off" size={48} color="#FF9800" />
+              <Text style={styles.nfcDisabledText}>
+                Para usar este módulo, activa el NFC de tu dispositivo.
               </Text>
             </View>
           )}
-        </>
+        </View>
       )}
     </LinearGradient>
   );
 };
-export default GetVehicles;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  loadingCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 40,
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 4},
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  errorCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    width: width * 0.85,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 4},
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  errorIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFEBEE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#E53935',
+    marginBottom: 10,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 20,
+  },
+  header: {
+    alignItems: 'center',
+    paddingTop: 50,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
+  },
+  headerIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 4},
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.85)',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  nfcPromptContainer: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  nfcCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    width: width - 40,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 4},
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  nfcIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#FCE4EC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  nfcTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 12,
+  },
+  nfcText: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 20,
+  },
+  nfcBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    gap: 8,
+  },
+  nfcBadgeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4CAF50',
+  },
+  listContainer: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    marginBottom: 16,
+    gap: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  statusBadgeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  flatListContainer: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+  },
+  nfcDisabledCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    width: '100%',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  nfcDisabledText: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 16,
+    lineHeight: 22,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    gap: 8,
+  },
+  backButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1C9ADD',
+  },
+  cancelButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 20,
+    gap: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  cancelButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#E53935',
+  },
+  cancelButtonTextGray: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#666',
+  },
+});
+
+export default EmergencyDashboard;

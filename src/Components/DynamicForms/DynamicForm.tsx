@@ -2,11 +2,12 @@
 /* eslint-disable eqeqeq */
 /* eslint-disable curly */
 import {Formik} from 'formik';
-import React from 'react';
-import {Dimensions, View} from 'react-native';
+import React, {useMemo} from 'react';
+import {Dimensions, StyleSheet, View} from 'react-native';
 import {Button} from 'react-native-paper';
 import * as Yup from 'yup';
 import {DynamicInputBasic} from './DynamicInputBasic';
+
 const {width} = Dimensions.get('screen');
 
 interface IDynamicForm {
@@ -23,8 +24,18 @@ interface IDynamicForm {
   showButton?: any;
   isFetching?: any;
   setExtractData?: any;
+  formRef?: React.MutableRefObject<any>;
   [x: string]: any;
 }
+
+// Styles extracted outside component for better performance
+const styles = StyleSheet.create({
+  buttonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
 export const DynamicForm: React.FC<IDynamicForm> = ({
   json,
   onSubmit,
@@ -41,43 +52,70 @@ export const DynamicForm: React.FC<IDynamicForm> = ({
   showButton = true,
   isFetching = false,
   setExtractData,
+  formRef,
   children,
 }) => {
-  const initialValues: {[x: string]: any} = {};
-  const requiredFields: {[x: string]: any} = {};
-  if (buttonProps.style) {
-    if (!buttonProps.style.width) {
-      const oldStyles = {...buttonProps.style};
-      oldStyles.width = width * 0.8;
-      buttonProps.style = oldStyles;
-    }
-  }
+  // Memoize initialValues and validationSchema to prevent recalculation on every render
+  const {initialValues, validationSchema} = useMemo(() => {
+    const values: {[x: string]: any} = {};
+    const fields: {[x: string]: Yup.StringSchema} = {};
 
-  for (const input of json) {
-    initialValues[input.name] = input.value;
-    if (!input.validations) continue;
-    let schema = Yup.string();
-    for (const rule of input.validations) {
-      if (rule.type === 'required') {
-        schema = schema.required('Este campo es requerido');
+    for (const input of json) {
+      values[input.name] = input.value;
+      if (!input.validations) continue;
+
+      let schema = Yup.string();
+      for (const rule of input.validations) {
+        if (rule.type === 'required') {
+          schema = schema.required('Este campo es requerido');
+        }
+        if (rule.type === 'minLength') {
+          schema = schema.min(
+            rule.value as number,
+            `Ingresar minimo ${rule.value} caracteres`,
+          );
+        }
+        if (rule.type === 'maxLength') {
+          schema = schema.max(
+            rule.value as number,
+            `Ingresar maximo ${rule.value} caracteres`,
+          );
+        }
+        //TODO add more rules
       }
-      if (rule.type === 'minLength') {
-        schema = schema.min(
-          rule.value as number,
-          `Ingresar minimo ${rule.value} caracteres`,
-        );
-      }
-      if (rule.type === 'maxLength') {
-        schema = schema.max(
-          rule.value as number,
-          `Ingresar maximo ${rule.value} caracteres`,
-        );
-      }
-      //TODO add more rules
+      fields[input.name] = schema;
     }
-    requiredFields[input.name] = schema;
-  }
-  const validationSchema = Yup.object({...requiredFields});
+
+    return {
+      initialValues: values,
+      validationSchema: Yup.object(fields),
+    };
+  }, [json]);
+
+  // Memoize computed button style to avoid prop mutation
+  const computedButtonProps = useMemo(() => {
+    if (!buttonProps?.style?.width) {
+      return {
+        ...buttonProps,
+        style: {
+          ...buttonProps?.style,
+          width: width * 0.8,
+        },
+      };
+    }
+    return buttonProps;
+  }, [buttonProps]);
+
+  // Memoize json items with computed widths
+  const processedJson = useMemo(() => {
+    return json.map((item: any) => ({
+      ...item,
+      customStyle: {
+        ...item.customStyle,
+        width: item.customStyle?.width ?? width * 0.8,
+      },
+    }));
+  }, [json]);
 
   return (
     <Formik
@@ -85,6 +123,10 @@ export const DynamicForm: React.FC<IDynamicForm> = ({
       initialValues={initialValues}
       onSubmit={onSubmit}>
       {formik => {
+        if (formRef) {
+          formRef.current = formik;
+        }
+
         const getValues = formik.values != formik.initialValues;
         const getErrors = !formik.isValid;
         const getDisabled =
@@ -96,7 +138,7 @@ export const DynamicForm: React.FC<IDynamicForm> = ({
 
         return (
           <>
-            {json.map(
+            {processedJson.map(
               ({
                 name,
                 label,
@@ -116,9 +158,6 @@ export const DynamicForm: React.FC<IDynamicForm> = ({
                 editable = true,
                 doNotShow = false,
               }: any) => {
-                if (!customStyle.width) {
-                  customStyle.width = width * 0.8;
-                }
                 return (
                   <DynamicInputBasic
                     doNotShow={doNotShow}
@@ -153,12 +192,10 @@ export const DynamicForm: React.FC<IDynamicForm> = ({
             )}
             {children}
             {!withoutButton ? (
-              <View style={{justifyContent: 'center', alignItems: 'center'}}>
+              <View style={styles.buttonContainer}>
                 {cancelableButton ? (
                   <Button
-                    onPress={() => {
-                      cancelableAction();
-                    }}
+                    onPress={cancelableAction}
                     loading={isLoading}
                     {...cancelableStyle}>
                     {cancelLabel}
@@ -166,11 +203,9 @@ export const DynamicForm: React.FC<IDynamicForm> = ({
                 ) : null}
                 {showButton && (
                   <Button
-                    onPress={() => {
-                      formik.handleSubmit();
-                    }}
+                    onPress={formik.handleSubmit}
                     loading={isLoading}
-                    {...buttonProps}>
+                    {...computedButtonProps}>
                     {labelSubmit}
                   </Button>
                 )}

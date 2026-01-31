@@ -1,23 +1,32 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React from 'react';
-import {ActivityIndicator, Dimensions, Text, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Button, IconButton, Title} from 'react-native-paper';
-import {useDispatch, useSelector} from 'react-redux';
-import dataFormRegisterAditional from '../../DataForms/dataFormPrevUser.json';
-import {useMutationRequestUpdateVehicle} from '../../services/Accounting/useMutationRequestUpdateVehicle';
-import {useQueryGetInfoVehicleToEdit} from '../../services/Accounting/useQueryGetInfoVehicleToEdit';
-import {useQueryGetSignedImages} from '../../services/Register/useQueryGetSignedImages';
-import updateImages from '../../utils/updateImages';
-import {DynamicForm} from '../DynamicForms/DynamicForm';
-import {makeStyles} from '../Login/customStyles/FormLogin';
-import {makeStylesFormRegisterActivation} from '../RegisterActivation/makeStyles';
-import RegisterImages from '../RegisterActivation/RegisterImages';
-import CreateEditServices from './CreateEditServices';
-import { getAlertSuccess } from '../../redux/states/alertsReducerState';
-import { handlerFormRegisterAction } from '../../redux/states/handlerFormRegisterSlice';
-import { IStore } from '../../redux/store';
-const {width} = Dimensions.get('screen');
+import React from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import LinearGradient from "react-native-linear-gradient";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { useDispatch, useSelector } from "react-redux";
+import dataFormRegisterAditional from "../../DataForms/dataFormPrevUser.json";
+import { getAlertSuccess } from "../../redux/states/alertsReducerState";
+import { handlerFormRegisterAction } from "../../redux/states/handlerFormRegisterSlice";
+import { IStore } from "../../redux/store";
+import { useMutationRequestUpdateVehicle } from "../../services/Accounting/useMutationRequestUpdateVehicle";
+import { useQueryGetInfoVehicleToEdit } from "../../services/Accounting/useQueryGetInfoVehicleToEdit";
+import { useQueryGetSignedImages } from "../../services/Register/useQueryGetSignedImages";
+import updateImages from "../../utils/updateImages";
+import { DynamicForm } from "../DynamicForms/DynamicForm";
+import { makeStyles } from "../Login/customStyles/FormLogin";
+import { makeStylesFormRegisterActivation } from "../RegisterActivation/makeStyles";
+import RegisterImages from "../RegisterActivation/RegisterImages";
+import CreateEditServices from "./CreateEditServices";
+const { width } = Dimensions.get("screen");
 interface IPropsAditional {
   services: any;
   maintenances: any;
@@ -36,7 +45,7 @@ interface IData {
   inactivityDays: string;
 }
 const VehicleForm: React.FC<IPropsAditional> = React.memo(
-  ({services, maintenances, navigation, userProp}): JSX.Element => {
+  ({ services, maintenances, navigation, userProp }): JSX.Element => {
     const [isLoadingS3, setIsLoadingS3] = React.useState(false);
     const [tankSignedUri, setTankSignedUri] = React.useState<any>(false);
     const [pcSignedUri, setPcSignedUri] = React.useState<any>(false);
@@ -52,10 +61,10 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
     const [emergencyActivations, setEmergencyActivations] = React.useState<any>(
       [],
     );
-    const [endDateContract, setEndDateContract] = React.useState('');
-    const [newCredit, setNewCredit] = React.useState('');
-    const [totalPrice, setTotalPrice] = React.useState<any>('');
-    const [automaticPay, setAutomaticPay] = React.useState<any>('');
+    const [endDateContract, setEndDateContract] = React.useState("");
+    const [newCredit, setNewCredit] = React.useState("");
+    const [totalPrice, setTotalPrice] = React.useState<any>("");
+    const [automaticPay, setAutomaticPay] = React.useState<any>("");
     const [isGeneratedServices, setIsGeneratedServices] = React.useState(false);
     const {
       serviceSelect,
@@ -73,7 +82,7 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
       isLoading,
       isFetching,
     } = useQueryGetInfoVehicleToEdit(dataVariables);
-    const {data} = mutation;
+    const { data } = mutation;
     const [withMileage, setWithMileage] = React.useState(false);
     const [allGas, setAllGas] = React.useState(false);
     const onWithMileage = () => setWithMileage(!withMileage);
@@ -87,8 +96,8 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
     const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
 
     const [dataVariablesSigned, setDataVariablesSigned] = React.useState<any>({
-      _id: '',
-      serialNumber: '',
+      _id: "",
+      serialNumber: "",
     });
     const {
       refetch: refetchSigned,
@@ -100,7 +109,7 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
       emergencyActivations.map((dataActivation: any) => {
         if (
           Number(dataActivation.value) <= 0 ||
-          dataActivation.value === '' ||
+          dataActivation.value === "" ||
           isNaN(Number(dataActivation.value))
         ) {
           errorInsideActivations += 1;
@@ -111,18 +120,18 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
         for (let i of policies) {
           verifyEmpty = 1;
           if (
-            i.liters == '0' ||
+            i.liters == "0" ||
             isNaN(Number(i.liters)) ||
             Number(i.liters) < 0 ||
-            i.liters === ''
+            i.liters === ""
           ) {
             verifyEmpty = 0;
           }
           if (
-            i.activation == '0' ||
+            i.activation == "0" ||
             isNaN(Number(i.activation)) ||
             Number(i.activation) < 0 ||
-            i.activation === ''
+            i.activation === ""
           ) {
             verifyEmpty = 0;
           }
@@ -131,93 +140,96 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
       if (errorInsideActivations > 0) {
         dispatch(
           getAlertSuccess({
-            message: '',
+            message: "",
             show: false,
-            messageError: 'Horas de activacion emergencia no validas',
+            messageError: "Horas de activacion emergencia no validas",
             showError: true,
           }),
         );
       } else if (verifyEmpty === 0) {
         dispatch(
           getAlertSuccess({
-            message: '',
+            message: "",
             show: false,
-            messageError: 'No debe haber litros o activacion sin definir',
+            messageError: "No debe haber litros o activacion sin definir",
             showError: true,
           }),
         );
-      } else if (limitPay === '') {
+      } else if (limitPay === "") {
         dispatch(
           getAlertSuccess({
-            message: '',
+            message: "",
             show: false,
-            messageError: 'Debes seleccionar la fecha de corte',
+            messageError: "Debes seleccionar la fecha de corte",
             showError: true,
           }),
         );
-      } else if (serviceSelect === '' || frequencySelect === '') {
+      } else if (serviceSelect === "" || frequencySelect === "") {
         dispatch(
           getAlertSuccess({
-            message: '',
+            message: "",
             show: false,
-            messageError: 'Debes seleccionar el financiamiento y frecuencia',
+            messageError: "Debes seleccionar el financiamiento y frecuencia",
             showError: true,
           }),
         );
       } else if (
         isNaN(Number(limitPay)) ||
-        String(limitPay).indexOf('.') > -1
+        String(limitPay).indexOf(".") > -1
       ) {
         dispatch(
           getAlertSuccess({
-            message: '',
+            message: "",
             show: false,
-            messageError: 'El dia de corte debe ser un numero',
+            messageError: "El dia de corte debe ser un numero",
             showError: true,
           }),
         );
       } else if (
-        maintenanceSelect === '' ||
-        frequencySelectMaintenance === ''
+        maintenanceSelect === "" ||
+        frequencySelectMaintenance === ""
       ) {
         dispatch(
           getAlertSuccess({
-            message: '',
+            message: "",
             show: false,
-            messageError: 'Debes seleccionar el mantenimiento y frecuencia',
+            messageError: "Debes seleccionar el mantenimiento y frecuencia",
             showError: true,
           }),
         );
       } else {
-        mutation.mutate({
-          _id: dataQuery.getInfoVehicleToEditResolver._id,
-          idPayment: dataQuery.getInfoVehicleToEditResolver._id,
-          idGas: user.idGas,
-          brand: data.brand,
-          model: data.model,
-          inactivityDays: data.inactivityDays,
-          circulationSerial: data.circulationSerial,
-          tankSerial: data.tankSerial,
-          plates: data.plates.toUpperCase(),
-          others: data.others,
-          cylinders: data.cylinders,
-          idService: serviceSelect,
-          frequencySelected: frequencySelect,
-          idMaintenance: maintenanceSelect,
-          frequencySelectMaintenance: frequencySelectMaintenance,
-          totalPrice,
-          policies,
-          limitPay: Number(limitPay),
-          isNaturalGas: isSwitchOn,
-          finalDateToPay: automaticPay,
-          withMileage,
-          timeOff,
-          vehicleEmergencyActivations: emergencyActivations,
-          allGas,
-          endDateContract,
-          newCredit,
-        });
-
+        try {
+          const satu = await mutation.mutateAsync({
+            _id: dataQuery.getInfoVehicleToEditResolver._id,
+            idPayment: dataQuery.getInfoVehicleToEditResolver._id,
+            idGas: user.idGas,
+            brand: data.brand,
+            model: data.model,
+            inactivityDays: data.inactivityDays,
+            circulationSerial: data.circulationSerial,
+            tankSerial: data.tankSerial,
+            plates: data.plates.toUpperCase(),
+            others: data.others,
+            cylinders: data.cylinders,
+            idService: serviceSelect,
+            frequencySelected: frequencySelect,
+            idMaintenance: maintenanceSelect,
+            frequencySelectMaintenance: frequencySelectMaintenance,
+            totalPrice,
+            policies,
+            limitPay: Number(limitPay),
+            isNaturalGas: isSwitchOn,
+            finalDateToPay: automaticPay,
+            withMileage,
+            timeOff,
+            vehicleEmergencyActivations: emergencyActivations,
+            allGas,
+            endDateContract,
+            newCredit,
+          });
+        } catch(e) {
+         
+        }
         setIsLoadingS3(true);
         await updateImages(
           {
@@ -251,12 +263,12 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
       mutation.reset();
     }
     const buttonInfo = {
-      style: {...makeStyles.stylesButton, width: width * 0.9},
-      // icon: 'arrow-right-bold',
+      style: { ...makeStyles.stylesButton, width: width * 0.9 },
       contentStyle: makeStyles.stylesButtonContent,
-      buttonColor:'#1C9ADD' ,
-      mode: 'contained',
+      buttonColor: "#1C9ADD",
+      mode: "contained",
     };
+
     React.useEffect(() => {
       if (user && userProp) {
         setDataVariables({
@@ -293,11 +305,12 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
         );
         if (
           dataQuery.getInfoVehicleToEditResolver.numberOfMonthsContract !=
-          'null'
-        )
-          {setEndDateContract(
+          "null"
+        ) {
+          setEndDateContract(
             dataQuery.getInfoVehicleToEditResolver.numberOfMonthsContract,
-          );}
+          );
+        }
 
         setIsSwitchOn(dataQuery.getInfoVehicleToEditResolver.isNaturalGas);
         setTotalPrice(dataQuery.getInfoVehicleToEditResolver.totalPrice);
@@ -352,30 +365,30 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
 
     if (isFetching || isLoading) {
       return (
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <ActivityIndicator animating={true} color={'red'} />
+        <View style={localStyles.loadingContainer}>
+          <ActivityIndicator size="large" color="#1C9ADD" />
+          <Text style={localStyles.loadingText}>Cargando datos...</Text>
         </View>
       );
     }
     if (error) {
       return (
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'white',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <IconButton icon="water-boiler-alert" iconColor={'black'} size={80} />
-          <Title>Error de servidor, intentalo mas tarde</Title>
+        <View style={localStyles.errorContainer}>
+          <View style={localStyles.errorIconContainer}>
+            <Icon name="server-off" size={48} color="#E53935" />
+          </View>
+          <Text style={localStyles.errorTitle}>Error de servidor</Text>
+          <Text style={localStyles.errorText}>
+            No se pudo cargar la información.{"\n"}Intenta de nuevo más tarde.
+          </Text>
         </View>
       );
     }
     return (
       <>
         {parsedJson ? (
-          <KeyboardAwareScrollView style={{flex: 1}}>
-            <View style={{display: isRegisterImages ? 'flex' : 'none'}}>
+          <KeyboardAwareScrollView style={{ flex: 1 }}>
+            <View style={{ display: isRegisterImages ? "flex" : "none" }}>
               <RegisterImages
                 tankSignedUri={tankSignedUri}
                 setTankSignedUri={setTankSignedUri}
@@ -394,8 +407,9 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
             </View>
             <View
               style={{
-                display: isGeneratedServices ? 'flex' : 'none',
-              }}>
+                display: isGeneratedServices ? "flex" : "none",
+              }}
+            >
               <CreateEditServices
                 newCredit={newCredit}
                 setNewCredit={setNewCredit}
@@ -426,46 +440,69 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
             <View
               style={{
                 display:
-                  isGeneratedServices || isRegisterImages ? 'none' : 'flex',
-                alignItems: 'center',
-              }}>
+                  isGeneratedServices || isRegisterImages ? "none" : "flex",
+                alignItems: "center",
+              }}
+            >
               <DynamicForm
                 onSubmit={handleSubmit}
                 isLoading={isLoading || isLoadingS3}
                 json={parsedJson}
                 labelSubmit="Solicitar Actualizacion"
-                buttonProps={buttonInfo}>
-                <Button
-                  style={{marginBottom: 20}}
-                  mode="contained"
-                  buttonColor="#1C9ADD"
-                  onPress={() => {
-                    setIsGeneratedServices(true);
-                  }}>
-                  Generar Servicios
-                </Button>
-                <Button
-                  style={{
-                    marginVertical: 10,
-                    display: dataSigned ? 'flex' : 'none',
-                  }}
-                  mode="contained"
-                  buttonColor="#1C9ADD"
-                  onPress={() => {
-                    setIsRegisterImages(true);
-                  }}>
-                  Actualizar imagenes
-                </Button>
-                <Button
-                  style={{marginBottom: 20}}
-                  mode="contained"
-                  buttonColor="#1C9ADD"
+                buttonProps={buttonInfo}
+              >
+                {/* Generar Servicios Button - Green */}
+                <TouchableOpacity
+                  style={localStyles.actionButton}
+                  onPress={() => setIsGeneratedServices(true)}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    style={localStyles.actionButtonGradient}
+                    colors={["#4CAF50", "#388E3C"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Icon name="cog-outline" size={20} color="#FFFFFF" />
+                    <Text style={localStyles.actionButtonText}>
+                      Generar Servicios
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                {/* Actualizar Imagenes Button - Orange */}
+                {dataSigned && (
+                  <TouchableOpacity
+                    style={localStyles.actionButton}
+                    onPress={() => setIsRegisterImages(true)}
+                    activeOpacity={0.8}
+                  >
+                    <LinearGradient
+                      style={localStyles.actionButtonGradient}
+                      colors={["#FF9800", "#F57C00"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    >
+                      <Icon name="image-multiple" size={20} color="#FFFFFF" />
+                      <Text style={localStyles.actionButtonText}>
+                        Actualizar Imágenes
+                      </Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                )}
+
+                {/* Cancelar Button - Red */}
+                <TouchableOpacity
+                  style={localStyles.cancelButton}
                   onPress={() => {
                     dispatch(handlerFormRegisterAction(false));
-                    navigation.navigate('Dashboard', {});
-                  }}>
-                  Terminar
-                </Button>
+                    navigation.navigate("Dashboard", {});
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Icon name="close" size={20} color="#E53935" />
+                  <Text style={localStyles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
               </DynamicForm>
 
               <Text style={makeStylesFormRegisterActivation.textCondition}>
@@ -478,4 +515,92 @@ const VehicleForm: React.FC<IPropsAditional> = React.memo(
     );
   },
 );
+
+const localStyles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#666",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  errorIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#FFEBEE",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#E53935",
+    marginBottom: 10,
+  },
+  errorText: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  actionButton: {
+    width: width * 0.85,
+    borderRadius: 14,
+    overflow: "hidden",
+    marginBottom: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  actionButtonGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    gap: 10,
+  },
+  actionButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  cancelButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: width * 0.85,
+    backgroundColor: "#FFEBEE",
+    paddingVertical: 16,
+    borderRadius: 14,
+    marginBottom: 12,
+    gap: 10,
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#E53935",
+  },
+});
+
 export default VehicleForm;

@@ -7,7 +7,9 @@ import Store from '../redux/store';
 export const graphqlRequestNestClient =  (endpointParam: string = '') => {
   const endpoint = endpointParam
     ? endpointParam
-    : 'https://nest-staging.activagas.com/graphql/';
+    //:'http://192.168.0.18:3000/graphql/'
+   : 'https://nest-staging.activagas.com/graphql/';
+//   :'https://api.activagas.com/graphql/';
 
 const token = Store.getState().authToken.token;
   const headers: any = {

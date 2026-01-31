@@ -1,18 +1,26 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-native/no-inline-styles */
 import {Picker} from '@react-native-picker/picker';
 import React, {useState} from 'react';
-import {Dimensions, Switch, Text, TextInput, View} from 'react-native';
+import {
+  Dimensions,
+  Text,
+  TextInput,
+  View,
+  StyleSheet,
+  Platform,
+  TouchableOpacity,
+} from 'react-native';
 import {Calendar} from 'react-native-calendars';
 import LinearGradient from 'react-native-linear-gradient';
-import {Button, HelperText, Modal, Portal} from 'react-native-paper';
+import {Switch, Modal, Portal} from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useDispatch, useSelector} from 'react-redux';
 import {validateNumber} from '../../utils/validations';
 import LitersActivations from './LitersActivations';
-import { getServicesStore } from '../../redux/states/servicesSlice';
-import { IStore } from '../../redux/store';
+import {getServicesStore} from '../../redux/states/servicesSlice';
+import {IStore} from '../../redux/store';
+
 const {width, height} = Dimensions.get('screen');
+
 interface ISelects {
   services: any;
   maintenances: any;
@@ -35,6 +43,76 @@ interface ISelects {
   newCredit?: any;
   setNewCredit?: any;
 }
+
+interface InputCardProps {
+  icon: string;
+  iconColor: string;
+  label: string;
+  placeholder: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  helperText?: string;
+  editable?: boolean;
+}
+
+const InputCard: React.FC<InputCardProps> = ({
+  icon,
+  iconColor,
+  label,
+  placeholder,
+  value,
+  onChangeText,
+  helperText,
+  editable = true,
+}) => (
+  <View style={styles.inputCard}>
+    <View style={styles.inputCardHeader}>
+      <View style={[styles.inputIconContainer, {backgroundColor: `${iconColor}15`}]}>
+        <Icon name={icon} size={18} color={iconColor} />
+      </View>
+      <Text style={styles.inputCardLabel}>{label}</Text>
+    </View>
+    <View style={styles.inputContainer}>
+      <TextInput
+        style={[styles.textInput, !editable && styles.textInputDisabled]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor="#999"
+        keyboardType="numeric"
+        editable={editable}
+      />
+    </View>
+    {helperText && <Text style={styles.helperText}>{helperText}</Text>}
+  </View>
+);
+
+interface SwitchRowProps {
+  icon: string;
+  iconColor: string;
+  label: string;
+  value: boolean;
+  onValueChange: () => void;
+}
+
+const SwitchRow: React.FC<SwitchRowProps> = ({
+  icon,
+  iconColor,
+  label,
+  value,
+  onValueChange,
+}) => (
+  <View style={styles.switchRow}>
+    <View style={styles.switchRowLeft}>
+      <View style={[styles.switchIconContainer, {backgroundColor: `${iconColor}15`}]}>
+        <Icon name={icon} size={20} color={iconColor} />
+      </View>
+      <Text style={styles.switchRowLabel}>{label}</Text>
+    </View>
+    <Switch value={value} onValueChange={onValueChange} color="#1C9ADD" />
+  </View>
+);
+
 const FormSelects: React.FC<ISelects> = ({
   services,
   maintenances,
@@ -57,14 +135,18 @@ const FormSelects: React.FC<ISelects> = ({
   newCredit,
   setNewCredit,
 }) => {
+  // Get default IDs safely (with fallback to empty string if arrays are empty)
+  const defaultServiceId = services.length > 0 ? services[0]._id : '';
+  const defaultMaintenanceId = maintenances.length > 0 ? maintenances[0]._id : '';
+
   const initStore: any = {
     serviceSelect:
-      prevService === '' || !prevService ? services[0]._id : prevService,
+      prevService === '' || !prevService ? defaultServiceId : prevService,
     frequencySelect:
       prevFrequency === '' || !prevFrequency ? '0' : prevFrequency,
     maintenanceSelect:
       prevMaintenance === '' || !prevMaintenance
-        ? maintenances[0]._id
+        ? defaultMaintenanceId
         : prevMaintenance,
     frequencySelectMaintenance:
       prevFrequencyMaintenance === '' || !prevFrequencyMaintenance
@@ -75,6 +157,7 @@ const FormSelects: React.FC<ISelects> = ({
     frequencySelectActivations: '',
     policies: [],
   };
+
   const [increaseCredit, setIncreaseCredit] = React.useState(false);
   const yiyi = parsedPolicies ? JSON.parse(parsedPolicies)[0] : '';
   const servicesStore = useSelector((store: IStore) => store.services);
@@ -100,24 +183,27 @@ const FormSelects: React.FC<ISelects> = ({
     prevCalendar || '',
   );
   const [markedDate, setMarkedDate] = React.useState<any>({
-    colors: {selected: true, marked: true, selectedColor: 'blue'},
+    colors: {selected: true, marked: true, selectedColor: '#1C9ADD'},
     date: `2020-03-${
       String(prevLimitPay).length <= 1
         ? '0' + String(prevLimitPay)
         : String(prevLimitPay)
     }`,
   });
+
+
   const [isWithPay, setIsWithPay] = React.useState(
-    prevService && prevService != services[0]._id,
+    prevService && defaultServiceId && prevService !== defaultServiceId,
   );
   const onWithPay = () =>
     setIsWithPay(isPriceEditable ? !isWithPay : isWithPay);
   const [isWithMaintenance, setIsWithMaintenance] = React.useState(
-    prevMaintenance && prevMaintenance != maintenances[0]._id,
+    prevMaintenance && defaultMaintenanceId && prevMaintenance !== defaultMaintenanceId,
   );
   const onWithMaintenance = () => setIsWithMaintenance(!isWithMaintenance);
   const [limitPay, setLimitPay] = React.useState<any>(prevLimitPay || '1');
   const [isVisibleCalendar, setIsVisibleCalendar] = React.useState(false);
+
   React.useEffect(() => {
     if (selectedServices !== '') {
       setServiceSelect(selectedServices);
@@ -138,8 +224,8 @@ const FormSelects: React.FC<ISelects> = ({
       setTypeService('');
       setServiceArray([]);
     }
-
   }, [selectedServices]);
+
   React.useEffect(() => {
     if (selectedMaintenances !== '') {
       setMaintenanceSelect(selectedMaintenances);
@@ -150,8 +236,8 @@ const FormSelects: React.FC<ISelects> = ({
     } else {
       setMaintenanceArray([]);
     }
-
   }, [selectedMaintenances]);
+
   React.useEffect(() => {
     const infoSelected = services.filter(
       (service: any) => String(service._id) == serviceSelect,
@@ -177,12 +263,14 @@ const FormSelects: React.FC<ISelects> = ({
       dispatch(getServicesStore(newServices));
     }
   }, [serviceSelect]);
+
   React.useEffect(() => {
     if (frequencySelect !== '') {
       const newServices = {...servicesStore, frequencySelect};
       dispatch(getServicesStore(newServices));
     }
   }, [frequencySelect]);
+
   React.useEffect(() => {
     if (maintenanceSelect !== '') {
       const newServices = {
@@ -193,6 +281,7 @@ const FormSelects: React.FC<ISelects> = ({
       dispatch(getServicesStore(newServices));
     }
   }, [maintenanceSelect]);
+
   React.useEffect(() => {
     if (frequencySelectMaintenance !== '') {
       const newServices = {...servicesStore, frequencySelectMaintenance};
@@ -211,14 +300,13 @@ const FormSelects: React.FC<ISelects> = ({
   }, [limitPay]);
 
   React.useEffect(() => {
-    //resetear los valores de frequency, tanto el id como el otro de el 0 creo
-    if (!isWithPay) {
-      setSelectedService(services[0]._id);
+    if (!isWithPay && defaultServiceId) {
+      setSelectedService(defaultServiceId);
       setAutomaticPay('0');
       setTotalPrice('0');
       const newServices = {
         ...servicesStore,
-        serviceSelect: services[0]._id,
+        serviceSelect: defaultServiceId,
         frequencySelect: '0',
       };
       dispatch(getServicesStore(newServices));
@@ -226,11 +314,11 @@ const FormSelects: React.FC<ISelects> = ({
   }, [isWithPay]);
 
   React.useEffect(() => {
-    if (!isWithMaintenance) {
-      setSelectedMaintenances(maintenances[0]._id);
+    if (!isWithMaintenance && defaultMaintenanceId) {
+      setSelectedMaintenances(defaultMaintenanceId);
       const newServices = {
         ...servicesStore,
-        maintenanceSelect: maintenances[0]._id,
+        maintenanceSelect: defaultMaintenanceId,
         frequencySelectMaintenance: '0',
       };
       dispatch(getServicesStore(newServices));
@@ -259,533 +347,566 @@ const FormSelects: React.FC<ISelects> = ({
       dispatch(getServicesStore(initStore));
     }
   }, []);
+
   return (
-    <>
-      <View
-        style={{
-          marginBottom: 10,
-          alignItems: 'flex-start',
-        }}>
-        <Text style={{color: '#ffffff', fontSize: 18, fontWeight: '500'}}>
-          POLITICAS DE CARGA
-        </Text>
-      </View>
-      <LitersActivations
-        initialActivationPolicy={initialActivationPolicy}
-        initialLiterPolicy={initialLiterPolicy}
-        parsedPolicies={parsedPolicies}
-      />
-      <View
-        style={{
-          marginBottom: 10,
-          alignItems: 'flex-start',
-        }}>
-        <Text style={{color: '#ffffff', fontSize: 18, fontWeight: '500'}}>
-          POLITICAS ACTIVACION
-        </Text>
-      </View>
-
-      <View
-        style={{
-          width: '70%',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 20,
-          flexDirection: 'row',
-        }}>
-        <Text>PAGO</Text>
-        <Switch value={isWithPay} onValueChange={onWithPay} color="#1C9ADD" />
-      </View>
-      {methodSelected === 'Comodato' && !isWithPay ? (
-        <View
-          style={{
-            backgroundColor: 'white',
-            width: width * 0.8,
-            height: height / 9,
-            margin: 8,
-            borderRadius: (width * 0.7) / (height / 36),
-            elevation: 5,
-          }}>
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              flex: 1,
-              justifyContent: 'center',
-            }}>
-            <TextInput
-              editable={isPriceEditable}
-              onChangeText={(dataInput: any) => {
-                if (validateNumber(dataInput)) {
-                  setEndDateContract(dataInput);
-                }
-              }}
-              value={endDateContract}
-              keyboardType={'numeric'}
-              style={{width: '85%', marginLeft: 5}}
-              placeholderTextColor="#000"
-              placeholder={'Duracion de contrato en meses'}
-            />
-            <View
-              style={{
-                width: 20,
-                height: 20,
-                aspectRatio: 1 * 1.4,
-              }}
-            />
+    <View style={styles.container}>
+      {/* Políticas de Carga Section */}
+      <View style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionIconContainer}>
+            <Icon name="gas-station" size={20} color="#FF5722" />
           </View>
-          <LinearGradient
-            style={{
-              width: '94%',
-              height: 2,
-              marginLeft: 7,
-              position: 'relative',
-              top: -10,
-            }}
-            colors={['#323F48', '#074169', '#019CDE']}
-          />
-          <HelperText
-            type="info"
-            visible={true}
-            style={{position: 'relative', top: -10}}>
-            Meses
-          </HelperText>
+          <Text style={styles.sectionTitle}>Políticas de Carga</Text>
         </View>
-      ) : null}
-      {isWithPay ? (
-        <>
-          <View
-            style={{
-              backgroundColor: 'white',
-              borderRadius: (width * 0.7) / (height / 36),
-              elevation: 5,
-              width: width / 1.5,
-              height: height / 10,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Picker
-              enabled={isPriceEditable}
-              style={{
-                width: width / 1.6,
+        <LitersActivations
+          initialActivationPolicy={initialActivationPolicy}
+          initialLiterPolicy={initialLiterPolicy}
+          parsedPolicies={parsedPolicies}
+        />
+      </View>
 
-                height: height / 15,
-                backgroundColor: 'white',
-              }}
-              dropdownIconColor="#1C9ADD"
-              selectedValue={selectedServices}
-              onValueChange={(itemValue, itemIndex) => {
-                const splitItem = itemValue.split(',');
-                setSelectedService(splitItem[0]);
-                setMarkedDate({
-                  colors: {selected: true, marked: true, selectedColor: 'blue'},
-                  date: '2020-03-01',
-                });
-                setCalendarControl(splitItem[1]);
-                setLimitPay('');
-              }}>
-              <Picker.Item
-                label={'--Seleccionar metodo de financiamiento--'}
-                value={''}
-              />
-              {services.map((data: any) => (
-                <Picker.Item
-                  key={data._id}
-                  label={data.name}
-                  value={`${data._id},${data.typeService}`}
-                />
-              ))}
-            </Picker>
+      {/* Políticas de Activación Section */}
+      <View style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <View style={[styles.sectionIconContainer, {backgroundColor: '#E3F2FD'}]}>
+            <Icon name="credit-card" size={20} color="#1C9ADD" />
           </View>
-          <Text>Metodo seleccionado: {methodSelected}</Text>
-          {methodSelected === 'Comodato' && (
-            <View
-              style={{
-                backgroundColor: 'white',
-                width: width * 0.8,
-                height: height / 9,
-                margin: 8,
-                borderRadius: (width * 0.7) / (height / 36),
-                elevation: 5,
-              }}>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  flex: 1,
-                  justifyContent: 'center',
-                }}>
-                <TextInput
-                  editable={isPriceEditable}
-                  onChangeText={(dataInput: any) => {
-                    if (validateNumber(dataInput)) {
-                      setEndDateContract(dataInput);
-                    }
-                  }}
-                  value={endDateContract}
-                  keyboardType={'numeric'}
-                  style={{width: '85%', marginLeft: 5}}
-                  placeholderTextColor="#000"
-                  placeholder={'Duracion de contrato en meses'}
-                />
-                <View
-                  style={{
-                    width: 20,
-                    height: 20,
-                    aspectRatio: 1 * 1.4,
-                  }}
-                />
+          <Text style={styles.sectionTitle}>Políticas de Activación</Text>
+        </View>
+
+        <SwitchRow
+          icon="cash"
+          iconColor="#4CAF50"
+          label="Pago"
+          value={isWithPay}
+          onValueChange={onWithPay}
+        />
+
+        {methodSelected === 'Comodato' && !isWithPay && (
+          <InputCard
+            icon="calendar-clock"
+            iconColor="#9C27B0"
+            label="Duración del Contrato"
+            placeholder="Ingrese duración en meses"
+            value={endDateContract}
+            onChangeText={(text) => {
+              if (validateNumber(text)) {
+                setEndDateContract(text);
+              }
+            }}
+            helperText="Meses"
+            editable={isPriceEditable}
+          />
+        )}
+
+        {isWithPay && (
+          <View style={styles.paymentSection}>
+            {/* Método de Financiamiento */}
+            <View style={styles.pickerCard}>
+              <View style={styles.pickerHeader}>
+                <Icon name="bank" size={18} color="#1C9ADD" />
+                <Text style={styles.pickerLabel}>Método de Financiamiento</Text>
               </View>
-              <LinearGradient
-                style={{
-                  width: '94%',
-                  height: 2,
-                  marginLeft: 7,
-                  position: 'relative',
-                  top: -10,
-                }}
-                colors={['#323F48', '#074169', '#019CDE']}
-              />
-              <HelperText
-                type="info"
-                visible={true}
-                style={{position: 'relative', top: -10}}>
-                Meses
-              </HelperText>
-            </View>
-          )}
-          {calendarControl &&
-          methodSelected !== 'Contado' &&
-          methodSelected !== 'Comodato' ? (
-            <>
-              <Button
-                style={{marginVertical: 10}}
-                mode="contained"
-                buttonColor="#1C9ADD"
-                onPress={() => {
-                  setIsVisibleCalendar(true);
-                }}>
-                SELECCIONAR DIA DE CORTE
-              </Button>
-              <Portal>
-                <Modal
-                  onDismiss={() => setIsVisibleCalendar(false)}
-                  visible={isVisibleCalendar}
-                  contentContainerStyle={{
-                    backgroundColor: 'transparent',
-                    alignItems: 'center',
+              <View style={styles.pickerContainer}>
+                <Picker
+                  enabled={isPriceEditable}
+                  style={styles.picker}
+                  dropdownIconColor="#1C9ADD"
+                  selectedValue={selectedServices}
+                  onValueChange={(itemValue) => {
+                    const splitItem = itemValue.split(',');
+                    setSelectedService(splitItem[0]);
+                    setMarkedDate({
+                      colors: {selected: true, marked: true, selectedColor: '#1C9ADD'},
+                      date: '2020-03-01',
+                    });
+                    setCalendarControl(splitItem[1]);
+                    setLimitPay('');
                   }}>
-                  <Calendar
-                    theme={{
-                      textDisabledColor: 'white',
-                    }}
-                    style={{
-                      height: height / 2.4,
-                      elevation: 5,
-                      width: width / 1.8,
-                      borderRadius: (width * 0.7) / (height / 36),
-                    }}
-                    markedDates={{
-                      [markedDate.date]: markedDate.colors,
-                    }}
-                    current="2020-03-01"
-                    maxDate={
-                      calendarControl === 'Month' ? '2020-03-31' : '2020-03-07'
-                    }
-                    onDayPress={({day, dateString}) => {
-                      if (isPriceEditable) {
-                        setMarkedDate({
-                          colors: {
-                            selected: true,
-                            marked: true,
-                            selectedColor: 'blue',
-                          },
-                          date: dateString,
-                        });
-                        setLimitPay(day);
-                      }
-                    }}
-                    renderHeader={() => {
-                      return <></>;
-                    }}
-                    hideArrows={true}
-                    hideDayNames={true}
-                    hideExtraDays={true}
+                  <Picker.Item
+                    label="--Seleccionar método--"
+                    value=""
                   />
-                </Modal>
-              </Portal>
-
-              <View
-                style={{
-                  backgroundColor: 'white',
-                  width: width * 0.8,
-                  height: height / 9,
-                  margin: 8,
-                  borderRadius: (width * 0.7) / (height / 36),
-                  elevation: 5,
-                }}>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    flex: 1,
-                    justifyContent: 'center',
-                  }}>
-                  <TextInput
-                    editable={isPriceEditable}
-                    onChangeText={(dataInput: any) => {
-                      if (validateNumber(dataInput)) {
-                        setTotalPrice(dataInput);
-                      }
-                    }}
-                    value={totalPrice}
-                    keyboardType={'numeric'}
-                    style={{width: '85%', marginLeft: 5}}
-                    placeholderTextColor="#000"
-                    placeholder={'Precio del equipo/credito'}
-                  />
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      aspectRatio: 1 * 1.4,
-                    }}
-                  />
-                </View>
-                <LinearGradient
-                  style={{
-                    width: '94%',
-                    height: 2,
-                    marginLeft: 7,
-                    position: 'relative',
-                    top: -10,
-                  }}
-                  colors={['#323F48', '#074169', '#019CDE']}
-                />
-                <HelperText
-                  type="info"
-                  visible={true}
-                  style={{position: 'relative', top: -10}}>
-                  {totalPrice !== '' ? 'PRECIO DEL EQUIPO/CREDITO' : '$'}
-                </HelperText>
-              </View>
-
-              <View
-                style={{
-                  backgroundColor: 'white',
-                  width: width * 0.8,
-                  height: height / 9,
-                  margin: 8,
-                  borderRadius: (width * 0.7) / (height / 36),
-                  elevation: 5,
-                }}>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    flex: 1,
-                    justifyContent: 'center',
-                  }}>
-                  <TextInput
-                    editable={isPriceEditable}
-                    value={automaticPay}
-                    placeholder="Meses/semanas de financiamiento"
-                    onChangeText={(dataInput: any) => {
-                      if (validateNumber(dataInput)) {setAutomaticPay(dataInput);}
-                    }}
-                    keyboardType={'numeric'}
-                    style={{width: '85%', marginLeft: 5}}
-                    placeholderTextColor="#000"
-                  />
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      aspectRatio: 1 * 1.4,
-                    }}
-                  />
-                </View>
-                <LinearGradient
-                  style={{
-                    width: '94%',
-                    height: 2,
-                    marginLeft: 7,
-                    position: 'relative',
-                    top: -10,
-                  }}
-                  colors={['#323F48', '#074169', '#019CDE']}
-                />
-                <HelperText
-                  type="info"
-                  visible={true}
-                  style={{position: 'relative', top: -10}}>
-                  {automaticPay !== ''
-                    ? 'MESES/SEMANAS DE FINANCIAMIENTO'
-                    : 'N°'}
-                </HelperText>
-              </View>
-
-              {!isPriceEditable && methodSelected !== 'Comodato' ? (
-                <Button
-                  style={{marginVertical: 10}}
-                  mode="contained"
-                  buttonColor="#1C9ADD"
-                  onPress={() => {
-                    setIncreaseCredit(true);
-                  }}>
-                  AUMENTO DE CREDITO
-                </Button>
-              ) : null}
-
-              {increaseCredit && (
-                <View
-                  style={{
-                    backgroundColor: 'white',
-                    width: width * 0.8,
-                    height: height / 9,
-                    margin: 8,
-                    borderRadius: (width * 0.7) / (height / 36),
-                    elevation: 5,
-                  }}>
-                  <View
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      flex: 1,
-                      justifyContent: 'center',
-                    }}>
-                    <TextInput
-                      value={newCredit}
-                      placeholder="Ingresar el aumento de credito"
-                      onChangeText={(dataInput: any) => {
-                        if (validateNumber(dataInput)) {setNewCredit(dataInput);}
-                      }}
-                      keyboardType={'numeric'}
-                      style={{width: '85%', marginLeft: 5}}
-                      placeholderTextColor="#000"
+                  {services.map((data: any) => (
+                    <Picker.Item
+                      key={data._id}
+                      label={data.name}
+                      value={`${data._id},${data.typeService}`}
                     />
-                    <View
-                      style={{
-                        width: 20,
-                        height: 20,
-                        aspectRatio: 1 * 1.4,
-                      }}
-                    />
-                  </View>
-                  <LinearGradient
-                    style={{
-                      width: '94%',
-                      height: 2,
-                      marginLeft: 7,
-                      position: 'relative',
-                      top: -10,
-                    }}
-                    colors={['#323F48', '#074169', '#019CDE']}
-                  />
-                  <HelperText
-                    type="info"
-                    visible={true}
-                    style={{position: 'relative', top: -10}}>
-                    Aumento de credito
-                  </HelperText>
+                  ))}
+                </Picker>
+              </View>
+              {methodSelected !== '' && (
+                <View style={styles.selectedMethodBadge}>
+                  <Icon name="check-circle" size={14} color="#4CAF50" />
+                  <Text style={styles.selectedMethodText}>{methodSelected}</Text>
                 </View>
               )}
-            </>
-          ) : null}
-        </>
-      ) : null}
+            </View>
 
-      <View
-        style={{
-          width: '70%',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 20,
-          flexDirection: 'row',
-        }}>
-        <Text>MANTENIMIENTO</Text>
-        <Switch value={isWithMaintenance} onValueChange={onWithMaintenance} color="#1C9ADD" />
+            {methodSelected === 'Comodato' && (
+              <InputCard
+                icon="calendar-clock"
+                iconColor="#9C27B0"
+                label="Duración del Contrato"
+                placeholder="Ingrese duración en meses"
+                value={endDateContract}
+                onChangeText={(text) => {
+                  if (validateNumber(text)) {
+                    setEndDateContract(text);
+                  }
+                }}
+                helperText="Meses"
+                editable={isPriceEditable}
+              />
+            )}
+
+            {calendarControl &&
+              methodSelected !== 'Contado' &&
+              methodSelected !== 'Comodato' && (
+                <>
+                  <TouchableOpacity
+                    style={styles.calendarButton}
+                    onPress={() => setIsVisibleCalendar(true)}
+                    activeOpacity={0.8}>
+                    <LinearGradient
+                      style={styles.calendarButtonGradient}
+                      colors={['#1C9ADD', '#0D7ABC']}
+                      start={{x: 0, y: 0}}
+                      end={{x: 1, y: 1}}>
+                      <Icon name="calendar" size={20} color="#FFFFFF" />
+                      <Text style={styles.calendarButtonText}>
+                        Seleccionar Día de Corte
+                      </Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+
+                  <Portal>
+                    <Modal
+                      onDismiss={() => setIsVisibleCalendar(false)}
+                      visible={isVisibleCalendar}
+                      contentContainerStyle={styles.modalContainer}>
+                      <View style={styles.calendarCard}>
+                        <View style={styles.calendarHeader}>
+                          <Icon name="calendar-month" size={24} color="#1C9ADD" />
+                          <Text style={styles.calendarTitle}>Día de Corte</Text>
+                        </View>
+                        <Calendar
+                          theme={{
+                            textDisabledColor: '#DDD',
+                            todayTextColor: '#1C9ADD',
+                            selectedDayBackgroundColor: '#1C9ADD',
+                            arrowColor: '#1C9ADD',
+                          }}
+                          style={styles.calendar}
+                          markedDates={{
+                            [markedDate.date]: markedDate.colors,
+                          }}
+                          current="2020-03-01"
+                          maxDate={
+                            calendarControl === 'Month' ? '2020-03-31' : '2020-03-07'
+                          }
+                          onDayPress={({day, dateString}) => {
+                            if (isPriceEditable) {
+                              setMarkedDate({
+                                colors: {
+                                  selected: true,
+                                  marked: true,
+                                  selectedColor: '#1C9ADD',
+                                },
+                                date: dateString,
+                              });
+                              setLimitPay(day);
+                              setIsVisibleCalendar(false);
+                            }
+                          }}
+                          renderHeader={() => null}
+                          hideArrows={true}
+                          hideDayNames={true}
+                          hideExtraDays={true}
+                        />
+                      </View>
+                    </Modal>
+                  </Portal>
+
+                  <InputCard
+                    icon="currency-usd"
+                    iconColor="#4CAF50"
+                    label="Precio del Equipo/Crédito"
+                    placeholder="Ingrese el precio"
+                    value={totalPrice}
+                    onChangeText={(text) => {
+                      if (validateNumber(text)) {
+                        setTotalPrice(text);
+                      }
+                    }}
+                    helperText="$"
+                    editable={isPriceEditable}
+                  />
+
+                  <InputCard
+                    icon="clock-outline"
+                    iconColor="#FF9800"
+                    label="Período de Financiamiento"
+                    placeholder="Meses/semanas"
+                    value={automaticPay}
+                    onChangeText={(text) => {
+                      if (validateNumber(text)) {
+                        setAutomaticPay(text);
+                      }
+                    }}
+                    helperText="Meses/Semanas"
+                    editable={isPriceEditable}
+                  />
+
+                  {!isPriceEditable && methodSelected !== 'Comodato' && (
+                    <TouchableOpacity
+                      style={styles.creditButton}
+                      onPress={() => setIncreaseCredit(true)}
+                      activeOpacity={0.8}>
+                      <LinearGradient
+                        style={styles.creditButtonGradient}
+                        colors={['#9C27B0', '#7B1FA2']}
+                        start={{x: 0, y: 0}}
+                        end={{x: 1, y: 1}}>
+                        <Icon name="trending-up" size={20} color="#FFFFFF" />
+                        <Text style={styles.creditButtonText}>Aumento de Crédito</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  )}
+
+                  {increaseCredit && (
+                    <InputCard
+                      icon="plus-circle"
+                      iconColor="#9C27B0"
+                      label="Aumento de Crédito"
+                      placeholder="Ingrese el monto"
+                      value={newCredit}
+                      onChangeText={(text) => {
+                        if (validateNumber(text)) {
+                          setNewCredit(text);
+                        }
+                      }}
+                      helperText="Monto adicional"
+                    />
+                  )}
+                </>
+              )}
+          </View>
+        )}
       </View>
 
-      {isWithMaintenance ? (
-        <>
-          <View
-            style={{
-              backgroundColor: 'white',
-              borderRadius: (width * 0.7) / (height / 36),
-              elevation: 5,
-              width: width / 1.5,
-              height: height / 10,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Picker
-              style={{
-                width: width / 1.6,
-
-                height: height / 15,
-                backgroundColor: 'white',
-              }}
-              dropdownIconColor="#1C9ADD"
-              selectedValue={selectedMaintenances}
-              onValueChange={(itemValue, itemIndex) =>
-                setSelectedMaintenances(itemValue)
-              }>
-              <Picker.Item label={'METODO DE MANTENIMIENTO'} value={''} />
-              {maintenances.map((data: any) => (
-                <Picker.Item
-                  key={data._id}
-                  label={data.name}
-                  value={data._id}
-                />
-              ))}
-            </Picker>
+      {/* Mantenimiento Section - Only show if maintenances are available */}
+      {maintenances.length > 0 && (
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionIconContainer, {backgroundColor: '#FFF3E0'}]}>
+              <Icon name="wrench" size={20} color="#FF9800" />
+            </View>
+            <Text style={styles.sectionTitle}>Mantenimiento</Text>
           </View>
 
-          <View
-            style={{
-              marginVertical: 20,
-              backgroundColor: 'white',
-              borderRadius: (width * 0.7) / (height / 36),
-              elevation: 5,
-              width: width / 1.5,
-              height: height / 10,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            {maintenanceArray.length > 0 ? (
-              <Picker
-                style={{
-                  width: width / 1.6,
+          <SwitchRow
+            icon="tools"
+            iconColor="#FF9800"
+            label="Mantenimiento"
+            value={isWithMaintenance}
+            onValueChange={onWithMaintenance}
+          />
 
-                  height: height / 15,
-                  backgroundColor: 'white',
-                }}
-                dropdownIconColor="#1C9ADD"
-                selectedValue={frequencySelectMaintenance}
-                onValueChange={(itemValue, itemIndex) =>
-                  setFrequencySelectMaintenance(itemValue)
-                }>
-                <Picker.Item label={'FRECUENCIA DE MANTENIMIENTO'} value={''} />
-                {maintenanceArray[0].frequency.map((data: any) => (
-                  <Picker.Item
-                    style={{width: 50}}
-                    key={data}
-                    label={data}
-                    value={data}
-                  />
-                ))}
-              </Picker>
-            ) : null}
-          </View>
-        </>
-      ) : null}
-    </>
+          {isWithMaintenance && (
+            <View style={styles.maintenanceSection}>
+              <View style={styles.pickerCard}>
+                <View style={styles.pickerHeader}>
+                  <Icon name="cog" size={18} color="#FF9800" />
+                  <Text style={styles.pickerLabel}>Método de Mantenimiento</Text>
+                </View>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    style={styles.picker}
+                    dropdownIconColor="#FF9800"
+                    selectedValue={selectedMaintenances}
+                    onValueChange={(itemValue) =>
+                      setSelectedMaintenances(itemValue)
+                    }>
+                    <Picker.Item label="--Seleccionar método--" value="" />
+                    {maintenances.map((data: any) => (
+                      <Picker.Item
+                        key={data._id}
+                        label={data.name}
+                        value={data._id}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              {maintenanceArray.length > 0 && (
+                <View style={styles.pickerCard}>
+                  <View style={styles.pickerHeader}>
+                    <Icon name="update" size={18} color="#FF9800" />
+                    <Text style={styles.pickerLabel}>Frecuencia</Text>
+                  </View>
+                  <View style={styles.pickerContainer}>
+                    <Picker
+                      style={styles.picker}
+                      dropdownIconColor="#FF9800"
+                      selectedValue={frequencySelectMaintenance}
+                      onValueChange={(itemValue) =>
+                        setFrequencySelectMaintenance(itemValue)
+                      }>
+                      <Picker.Item label="--Seleccionar frecuencia--" value="" />
+                      {maintenanceArray[0].frequency.map((data: any) => (
+                        <Picker.Item key={data} label={data} value={data} />
+                      ))}
+                    </Picker>
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+      )}
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+  },
+  sectionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  sectionIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFF3E0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F5F5',
+  },
+  switchRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  switchIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  switchRowLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  inputCard: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 12,
+  },
+  inputCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  inputIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  inputCardLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  inputContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    overflow: 'hidden',
+  },
+  textInput: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#1A1A1A',
+  },
+  textInputDisabled: {
+    backgroundColor: '#F5F5F5',
+    color: '#999',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  paymentSection: {
+    marginTop: 8,
+  },
+  pickerCard: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 12,
+  },
+  pickerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    gap: 8,
+  },
+  pickerLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  pickerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
+  },
+  selectedMethodBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    gap: 6,
+  },
+  selectedMethodText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#2E7D32',
+  },
+  calendarButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginTop: 12,
+  },
+  calendarButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  calendarButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  modalContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendarCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    width: width * 0.85,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 8},
+        shadowOpacity: 0.2,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 10,
+      },
+    }),
+  },
+  calendarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    gap: 10,
+  },
+  calendarTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  calendar: {
+    borderRadius: 12,
+  },
+  creditButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginTop: 12,
+  },
+  creditButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  creditButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  maintenanceSection: {
+    marginTop: 8,
+  },
+});
+
 export default FormSelects;
