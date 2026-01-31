@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useCallback} from 'react';
 import {
   Dimensions,
   Text,
@@ -25,6 +25,7 @@ import CreateServices from '../Accounting/CreateServices';
 import AlertConfirmVehicleRegister from '../Alerts/AlertConfirmVehicleRegister';
 import {DynamicForm} from '../DynamicForms/DynamicForm';
 import RegisterImages from './RegisterImages';
+import {LocationSelector} from '../LocationSelector';
 
 const {width} = Dimensions.get('screen');
 
@@ -76,9 +77,25 @@ const FormAditionalInfo: React.FC<IPropsAditional> = React.memo(
     );
     const [isWithWhatsapp, setIsWithWhatsapp] = React.useState<boolean>(false);
     const [allGas, setAllGas] = React.useState<boolean>(false);
+    const [selectedState, setSelectedState] = useState<string>('');
+    const [selectedMunicipality, setSelectedMunicipality] = useState<string>('');
+    const [selectedLocation, setSelectedLocation] = useState<string>('');
     const [withMileage, setWithMileage] = React.useState(false);
     const onWithMileage = () => setWithMileage(!withMileage);
     const onWithWhatsapp = () => setIsWithWhatsapp(!isWithWhatsapp);
+
+    // Stable callbacks for LocationSelector
+    const handleStateChange = useCallback((state: string) => {
+      setSelectedState(state);
+    }, []);
+
+    const handleMunicipalityChange = useCallback((municipality: string) => {
+      setSelectedMunicipality(municipality);
+    }, []);
+
+    const handleLocationChange = useCallback((location: string) => {
+      setSelectedLocation(location);
+    }, []);
     const [saturday, setSaturday] = React.useState(false);
     const onSaturday = () => setSaturday(!saturday);
     const [endDateContract, setEndDateContract] = React.useState<any>('');
@@ -138,6 +155,20 @@ const FormAditionalInfo: React.FC<IPropsAditional> = React.memo(
     const [totalPrice, setTotalPrice] = React.useState<any>('0');
 
     const handleSent = (dataFields: IData) => {
+      // Validate location fields first
+      if (!selectedState) {
+        dispatchErrors('Selecciona un estado');
+        return;
+      }
+      if (!selectedMunicipality) {
+        dispatchErrors('Selecciona un municipio');
+        return;
+      }
+      if (!selectedLocation) {
+        dispatchErrors('Ingresa una dirección');
+        return;
+      }
+
       let withOutMaintenance = false;
       for (let i = 0; i < maintenances.length; i++) {
         if (maintenanceSelect === maintenances[i]._id) {
@@ -302,9 +333,9 @@ const FormAditionalInfo: React.FC<IPropsAditional> = React.memo(
         mutation.mutate({
           idClient: idUser.validation,
           email: dataFields.email,
-          state: dataFields.state,
-          municipality: dataFields.municipality,
-          location: dataFields.address,
+          state: selectedState,
+          municipality: selectedMunicipality,
+          location: selectedLocation,
           serialNumber: serialNumber,
           idGas: user.idGas,
           firstName: dataFields.firstName,
@@ -596,6 +627,16 @@ const FormAditionalInfo: React.FC<IPropsAditional> = React.memo(
                 buttonProps={buttonInfo}
                 showButton={false}
                 formRef={formRef}
+              />
+
+              {/* Location Selector */}
+              <LocationSelector
+                initialState={selectedState}
+                initialMunicipality={selectedMunicipality}
+                initialLocation={selectedLocation}
+                onStateChange={handleStateChange}
+                onMunicipalityChange={handleMunicipalityChange}
+                onLocationChange={handleLocationChange}
               />
 
               {/* WhatsApp Toggle */}

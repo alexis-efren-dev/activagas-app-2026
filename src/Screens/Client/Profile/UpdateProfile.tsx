@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {IStore} from '../../../redux/store';
 import {getAlertSuccess} from '../../../redux/states/alertsReducerState';
+import {LocationSelector} from '../../../Components/LocationSelector';
 
 const {width} = Dimensions.get('screen');
 
@@ -55,6 +56,9 @@ const UpdateProfile = (props: any) => {
   const [dataVariables, setDataVariables] = React.useState<any>(false);
   const [isWithWhatsapp, setIsWithWhatsapp] = React.useState<boolean>(false);
   const [parsedJson, setParsedJson] = React.useState<any>(false);
+  const [selectedState, setSelectedState] = useState<string>('');
+  const [selectedMunicipality, setSelectedMunicipality] = useState<string>('');
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
 
   const {data, error, isLoading, refetch, isFetching} =
     useQueryGetInfoToEdit(dataVariables);
@@ -93,31 +97,66 @@ const UpdateProfile = (props: any) => {
         }
       }
       setIsWithWhatsapp(parsedData.whatsapp);
+      // Set initial state, municipality and location values
+      if (parsedData.state) {
+        setSelectedState(parsedData.state);
+      }
+      if (parsedData.municipality) {
+        setSelectedMunicipality(parsedData.municipality);
+      }
+      if (parsedData.location) {
+        setSelectedLocation(parsedData.location);
+      }
       setParsedJson(revertJson);
     }
   }, [data]);
 
+  // Stable callbacks for LocationSelector
+  const handleStateChange = useCallback((state: string) => {
+    setSelectedState(state);
+  }, []);
+
+  const handleMunicipalityChange = useCallback((municipality: string) => {
+    setSelectedMunicipality(municipality);
+  }, []);
+
+  const handleLocationChange = useCallback((location: string) => {
+    setSelectedLocation(location);
+  }, []);
+
   const handlerSubmit = (dataToUpdate: any) => {
     if (dataToUpdate.password !== dataToUpdate.confirmPassword) {
       dispatchErrors('Las contraseñas deben ser iguales');
-    } else {
-      mutate({
-        idGas: userRedux.idGas,
-        _id: data.getInfoToEditUserResolver._id,
-        cellPhone: Number(dataToUpdate.cellPhone),
-        password: dataToUpdate.password,
-        state: dataToUpdate.state,
-        municipality: dataToUpdate.municipality,
-        location: dataToUpdate.location,
-        firstName: dataToUpdate.firstName,
-        lastName: dataToUpdate.lastName,
-        email:
-          dataToUpdate.email === 'Email no registrado'
-            ? ''
-            : dataToUpdate.email,
-        whatsapp: isWithWhatsapp,
-      });
+      return;
     }
+    if (!selectedState) {
+      dispatchErrors('Selecciona un estado');
+      return;
+    }
+    if (!selectedMunicipality) {
+      dispatchErrors('Selecciona un municipio');
+      return;
+    }
+    if (!selectedLocation) {
+      dispatchErrors('Ingresa una dirección');
+      return;
+    }
+    mutate({
+      idGas: userRedux.idGas,
+      _id: data.getInfoToEditUserResolver._id,
+      cellPhone: Number(dataToUpdate.cellPhone),
+      password: dataToUpdate.password,
+      state: selectedState,
+      municipality: selectedMunicipality,
+      location: selectedLocation,
+      firstName: dataToUpdate.firstName,
+      lastName: dataToUpdate.lastName,
+      email:
+        dataToUpdate.email === 'Email no registrado'
+          ? ''
+          : dataToUpdate.email,
+      whatsapp: isWithWhatsapp,
+    });
   };
 
   if (isLoading || isFetching) {
@@ -183,6 +222,16 @@ const UpdateProfile = (props: any) => {
               json={parsedJson}
               labelSubmit="Actualizar"
               buttonProps={buttonInfo}>
+              {/* Location Selector */}
+              <LocationSelector
+                initialState={selectedState}
+                initialMunicipality={selectedMunicipality}
+                initialLocation={selectedLocation}
+                onStateChange={handleStateChange}
+                onMunicipalityChange={handleMunicipalityChange}
+                onLocationChange={handleLocationChange}
+              />
+
               {/* WhatsApp Toggle */}
               <View style={styles.whatsappContainer}>
                 <View style={styles.whatsappIconContainer}>

@@ -109,6 +109,7 @@
   {
     "name": "state",
     "onlyLettersAndNumber": true,
+    "doNotShow": true,
     "label": "Ingresar Estado",
     "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
     "helper": "Estado",
@@ -129,23 +130,12 @@
         "background": "black"
       }
     },
-    "validations": [
-      {
-        "type": "required"
-      },
-      {
-        "type": "minLength",
-        "value": 3
-      },
-      {
-        "type": "maxLength",
-        "value": 60
-      }
-    ]
+    "validations": []
   },
   {
     "name": "municipality",
     "onlyLettersAndNumber": true,
+    "doNotShow": true,
     "label": "Ingresar Municipio",
     "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
     "helper": "Municipio",
@@ -166,23 +156,12 @@
         "background": "black"
       }
     },
-    "validations": [
-      {
-        "type": "required"
-      },
-      {
-        "type": "minLength",
-        "value": 3
-      },
-      {
-        "type": "maxLength",
-        "value": 60
-      }
-    ]
+    "validations": []
   },
   {
     "name": "address",
     "onlyLettersAndNumber": true,
+    "doNotShow": true,
     "label": "Ingresar Direccion",
     "iconUri": "https://activagas-files.s3.amazonaws.com/asterisc.png",
     "helper": "Direccion",
@@ -203,19 +182,7 @@
         "background": "black"
       }
     },
-    "validations": [
-      {
-        "type": "required"
-      },
-      {
-        "type": "minLength",
-        "value": 3
-      },
-      {
-        "type": "maxLength",
-        "value": 60
-      }
-    ]
+    "validations": []
   },
   {
     "name": "brand",
