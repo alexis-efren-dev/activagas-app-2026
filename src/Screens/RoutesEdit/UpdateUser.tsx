@@ -220,7 +220,9 @@ const UpdateUser = (props: any) => {
     <LinearGradient style={styles.container} colors={['#074169', '#019CDE']}>
       <KeyboardAwareScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}>
+        contentContainerStyle={styles.scrollContent}
+        nestedScrollEnabled={true}
+        keyboardShouldPersistTaps="handled">
         {/* Header */}
         <Animated.View
           style={[

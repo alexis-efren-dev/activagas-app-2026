@@ -536,7 +536,9 @@ const FormAditionalInfo: React.FC<IPropsAditional> = React.memo(
       <LinearGradient style={styles.container} colors={['#074169', '#019CDE']}>
         <KeyboardAwareScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}>
+          contentContainerStyle={styles.scrollContent}
+          nestedScrollEnabled={true}
+          keyboardShouldPersistTaps="handled">
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerIconContainer}>

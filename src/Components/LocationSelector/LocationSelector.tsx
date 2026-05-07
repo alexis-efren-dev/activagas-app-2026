@@ -181,7 +181,9 @@ const SelectorDropdown = memo<SelectorDropdownProps>(
                 initialNumToRender={10}
                 maxToRenderPerBatch={10}
                 windowSize={5}
-                removeClippedSubviews={Platform.OS === 'android'}
+                nestedScrollEnabled={true}
+                keyboardShouldPersistTaps="handled"
+                removeClippedSubviews={false}
               />
             ) : (
               <View style={styles.emptyContainer}>

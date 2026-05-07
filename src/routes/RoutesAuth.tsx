@@ -9,6 +9,7 @@ import {useNfcValidation} from '../hooks/useNfcValidation';
 import ErrorNfc from '../Screens/ErrorNfc/ErrorNfc';
 import ScannerScreenHce from '../Screens/Hce/Hce';
 import Logout from '../Screens/Logout/Logout';
+import {TestNfcRead, TestNfcWrite} from '../Screens/TestNfc';
 import ActivatorActivations from '../Screens/ScreensActivator/Activation/Activation';
 import ScannerScreen from '../Screens/ScreensActivator/ScannerScreen/ScannerScreen';
 import WriteNfcScreen from '../Screens/ScreensActivator/WriteNfcScreen/WriteNfcScreen';
@@ -155,6 +156,8 @@ const RoutesAuth: React.FC = (): JSX.Element => {
           options={{}}
         />
         <Stack.Screen name="WriteScreen" component={WriteNfcScreen} />
+        <Stack.Screen name="TestNfcRead" component={TestNfcRead} />
+        <Stack.Screen name="TestNfcWrite" component={TestNfcWrite} />
       </Stack.Navigator>
     </NavigationContainer>
   );

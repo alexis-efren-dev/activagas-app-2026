@@ -49,6 +49,8 @@ export const useGraphQlMutation = (
     customOptions = {
       ...options,
       onError: (e: any) => {
+       //   console.log("debug",mutation,path)
+
         dispatch(
           getAlertSuccess({
             message: '',
@@ -59,7 +61,6 @@ export const useGraphQlMutation = (
         );
       },
       onSuccess: (data: any) => {
-    
         const message: any = data ? Object.values(data)[0] : '';
         dispatch(
           getAlertSuccess({
