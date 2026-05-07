@@ -442,6 +442,7 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
+    color: '#1A1A1A',
   },
   addButton: {
     borderRadius: 10,

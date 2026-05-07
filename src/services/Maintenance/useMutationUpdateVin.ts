@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import {useGraphQlMutation} from '../../hooks/useGraphQlMutation';
 const TESTMUTATION = gql`
-  mutation updateInternalVinResolver($variables: TypesKeyFirstEmergency!) {
+  mutation updateInternalVinResolver($variables: FirstEmergencyKeyInput!) {
     updateInternalVinResolver(variables: $variables)
   }
 `;

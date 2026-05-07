@@ -38,6 +38,8 @@ interface UseDataLayerProps {
   terminate?: () => void;
   /** Callback when NFC write completes with content */
   terminateWrite?: (content: string) => void;
+  /** Whether to subscribe to HCE events (default: true) */
+  subscribed?: boolean;
 }
 
 /**
@@ -55,9 +57,16 @@ interface UseDataLayerProps {
 const useDataLayer = ({
   terminate = () => {},
   terminateWrite,
+  subscribed = true,
 }: UseDataLayerProps): DataLayer => {
   const {session} = useContext(HCESessionContext);
   const [loading, setLoading] = useState<boolean>(false);
+
+  // Use refs to avoid recreating updateApp when callbacks change
+  const terminateRef = useRef(terminate);
+  const terminateWriteRef = useRef(terminateWrite);
+  terminateRef.current = terminate;
+  terminateWriteRef.current = terminateWrite;
 
   // ============================================
   // Session Enabled State Management
@@ -165,39 +174,48 @@ const useDataLayer = ({
     });
 
     // Notify on write completion (content !== 'init')
-    // TODO: Content check may change with AES128 implementation
-    if (terminateWrite && application.content.content !== 'init') {
-      terminateWrite(application.content.content);
+    if (terminateWriteRef.current && application.content.content !== 'init') {
+      terminateWriteRef.current(application.content.content);
     }
 
     setEnabled(session.enabled);
-  }, [session, terminateWrite]);
+  }, [session]);
 
-  // Subscribe to HCE write events
+  // Subscribe to HCE write events (only when subscribed is true)
   useEffect(() => {
+    if (!subscribed) {
+      return;
+    }
     const cancelSubscription = session.on(
       HCESession.Events.HCE_STATE_WRITE_FULL,
-      updateApp,
+      () => {
+        updateApp();
+      },
     );
     updateApp(); // Initial sync
-    return () => cancelSubscription();
-  }, [session, updateApp]);
+    return () => {
+      cancelSubscription();
+    };
+  }, [session, updateApp, subscribed]);
 
   // ============================================
   // HCE Read Event Handler
   // ============================================
   const handleRead = useCallback(() => {
-    terminate();
-  }, [terminate]);
+    terminateRef.current();
+  }, []);
 
-  // Subscribe to HCE read events
+  // Subscribe to HCE read events (only when subscribed is true)
   useEffect(() => {
+    if (!subscribed) {
+      return;
+    }
     const cancelSubscription = session.on(
       HCESession.Events.HCE_STATE_READ,
       handleRead,
     );
     return () => cancelSubscription();
-  }, [session, handleRead]);
+  }, [session, handleRead, subscribed]);
 
   // ============================================
   // Event Logging

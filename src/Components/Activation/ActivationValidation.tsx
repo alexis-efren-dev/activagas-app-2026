@@ -6,6 +6,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import LinearGradient from 'react-native-linear-gradient';
 import {Button} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {useIsFocused} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux';
 import dataFormLogin from '../../DataForms/dataFormValidate.json';
 import useDataLayer from '../../hooks/useDataLayer';
@@ -32,6 +33,8 @@ const {height, width} = Dimensions.get('screen');
 const ACTIVATOR_COLOR = '#4CAF50';
 
 const ActivationValidation: React.FC<IActivation> = (props: any) => {
+  const isFocused = useIsFocused();
+
   const mutation = useMutationCreateRelease();
   const {data: dataRelease, reset: resetRelease} = mutation;
   const [variables, setVariables] = useState<any>();
@@ -47,27 +50,48 @@ const ActivationValidation: React.FC<IActivation> = (props: any) => {
   // Refs to access latest values in memoized callback
   const userRef = useRef<any>(null);
   const mutateBasicRef = useRef<any>(null);
+  const switchSessionRef = useRef<any>(null);
+
+  const isEncryptedKey = (data: string): boolean => {
+    if (data.length > 50) return true;
+    if (data.includes('+') || data.includes('/') || data.includes('=')) {
+      return true;
+    }
+    return false;
+  };
 
   const terminateWriteCallback = useCallback((data: string) => {
-    if (
-      data !== '' &&
-      data !== 'ACK' &&
-      data !== 'NACK' &&
-      data !== 'E00' &&
-      data !== 'E01' &&
-      data !== 'E02' &&
-      data !== 'E03'
-    ) {
-      setExtractPlates(['plates', data]);
-      if (mutateBasicRef.current && userRef.current) {
-        mutateBasicRef.current({
-          idGas: userRef.current.idGas,
-          idDispatcher: userRef.current._id,
-          serialNumber: data,
-        });
-      }
+
+    const ignoredResponses = ['', 'ACK', 'NACK', 'E00', 'E01', 'E02', 'E03'];
+    if (ignoredResponses.includes(data)) {
+      return;
     }
-  }, []);
+
+    if (isEncryptedKey(data)) {
+      return;
+    }
+
+
+    // Close HCE session immediately after reading (like Maintenance does)
+    if (switchSessionRef.current) {
+      switchSessionRef.current(false);
+    }
+
+    setExtractPlates(['plates', data]);
+
+    // Reset dataBasic before calling mutation to ensure fresh data
+    dispatch(dataBasicAction(false));
+
+    if (mutateBasicRef.current && userRef.current) {
+      mutateBasicRef.current({
+        idGas: userRef.current.idGas,
+        idDispatcher: userRef.current._id,
+        serialNumber: data,
+      });
+    } else {
+     
+    }
+  }, [dispatch]);
 
   const {switchSession, updateProp} = useDataLayer({
     terminateWrite: terminateWriteCallback,
@@ -75,7 +99,7 @@ const ActivationValidation: React.FC<IActivation> = (props: any) => {
 
   const [extractPlates, setExtractPlates] = useState<any>('');
   const dispatch = useDispatch();
-  const [handlerInit, setHandlerInit] = useState(false);
+  const hasInitializedRef = useRef(false);
   const user = useSelector((store: IStore) => store.loggedUser);
   const keys = useSelector((store: any) => store.key);
   const alerts = useSelector((store: IStore) => store.alerts);
@@ -86,6 +110,7 @@ const ActivationValidation: React.FC<IActivation> = (props: any) => {
   // Keep refs updated with latest values
   userRef.current = user;
   mutateBasicRef.current = mutateBasic;
+  switchSessionRef.current = switchSession;
 
   const {
     mutate: mutateAlert,
@@ -181,34 +206,37 @@ const ActivationValidation: React.FC<IActivation> = (props: any) => {
   };
 
   React.useEffect(() => {
+    const navigateToHce = async (pathName: string = 'activationvalidation') => {
+      // Close HCE session before navigating
+      if (switchSessionRef.current) {
+        await switchSessionRef.current(false);
+        // Small delay to ensure device resets
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      navigation.navigate('ScannerScreenHce', {
+        user,
+        key: keys.key,
+        controllerTime: controllerTime,
+        routeRefresh: 'ActivatorActivations',
+        path: pathName,
+        variables,
+      });
+    };
+
     if (keys.key !== '' && dataRelease?.createRelease) {
       reset();
       resetAlert();
       resetBasic();
       resetRelease();
       dispatch(dataBasicAction(false));
-      navigation.navigate('ScannerScreenHce', {
-        user,
-        key: keys.key,
-        controllerTime: controllerTime,
-        routeRefresh: 'ActivatorActivations',
-        path: 'activationvalidation',
-        variables,
-      });
+      navigateToHce('releasedPath');
     }
     if (keys.key !== '' && dataAlert?.getAlertToShowResolver === 'null') {
       reset();
       resetAlert();
       resetBasic();
       dispatch(dataBasicAction(false));
-      navigation.navigate('ScannerScreenHce', {
-        user,
-        key: keys.key,
-        controllerTime: controllerTime,
-        routeRefresh: 'ActivatorActivations',
-        path: 'activationvalidation',
-        variables,
-      });
+      navigateToHce();
     } else if (
       keys.key !== '' &&
       dataAlert?.getAlertToShowResolver.length > 6
@@ -228,10 +256,12 @@ const ActivationValidation: React.FC<IActivation> = (props: any) => {
   }, [keys, dataAlert, dataRelease]);
 
   React.useEffect(() => {
-    if (controlAlert && !alerts.showError) {
-      setControlAlert(false);
-      resetBasic();
-      dispatch(dataBasicAction(false));
+    const navigateToHceAfterAlert = async () => {
+      // Close HCE session before navigating
+      if (switchSessionRef.current) {
+        await switchSessionRef.current(false);
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
       navigation.navigate('ScannerScreenHce', {
         user,
         key: keys.key,
@@ -240,24 +270,37 @@ const ActivationValidation: React.FC<IActivation> = (props: any) => {
         path: 'activationvalidation',
         variables,
       });
+    };
+
+    if (controlAlert && !alerts.showError) {
+      setControlAlert(false);
+      resetBasic();
+      dispatch(dataBasicAction(false));
+      navigateToHceAfterAlert();
     }
   }, [JSON.stringify(alerts)]);
 
+  // Initialize HCE session on mount (only if not returning from Hce.tsx)
   React.useEffect(() => {
-    if (handlerInit) {
-      if (handlerHceSession.isEnabled) {
-        switchSession(true);
-        updateProp('content', 'init');
-        updateProp('writable', true);
-        //omit this for test
-        setExtractPlates(['plates', '']);
-      } else {
-        switchSession(false);
-        updateProp('writable', false);
-        updateProp('content', '');
-      }
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+
+    // Skip initial start if we're returning from Hce.tsx (handlerHceSession.isEnabled will be true)
+    if (handlerHceSession.isEnabled) {
+      return;
     }
-  }, [JSON.stringify(handlerHceSession), handlerInit]);
+
+    // Clear any persisted data on fresh app start
+    dispatch(dataBasicAction(false));
+    setIsVisibleBasicInformation(false);
+    setBasicInformation({});
+    setExtractPlates(['plates', '']);
+
+    switchSession(true).then(() => {
+      updateProp('content', 'init');
+      updateProp('writable', true);
+    });
+  }, []);
 
   React.useEffect(() => {
     if (dataRedux.getVehicleBasicInformationResolver) {
@@ -277,22 +320,29 @@ const ActivationValidation: React.FC<IActivation> = (props: any) => {
     }
   }, [JSON.stringify(dataRedux.getVehicleBasicInformationResolver)]);
 
+  // Restart HCE session when returning from Hce.tsx
   React.useEffect(() => {
-    if (keys.key === '') {
-      // this for dev
-      /*
-      setExtractPlates(["plates", "test1test1"]);
-      mutateBasic({
-        idGas: user.idGas,
-        idDispatcher: user._id,
-        serialNumber: "test1test1",
-      });
+    // Only restart if: screen is focused, HCE was enabled by Hce.tsx, no pending key
+    if (isFocused && handlerHceSession.isEnabled && keys.key === '') {
 
-      setHandlerInit(true);
-      dispatch(handlerHceSessionAction(true));
-      */
+      // Mark as initialized
+      hasInitializedRef.current = true;
+
+      // Reset UI state for new scan
+      setExtractPlates(['plates', '']);
+      setIsVisibleBasicInformation(false);
+      setBasicInformation({});
+
+      // Reset the flag BEFORE starting session to prevent double execution
+      dispatch(handlerHceSessionAction(false));
+
+      switchSession(true).then(() => {
+        updateProp('content', 'init');
+        updateProp('writable', true);
+      }).catch((err) => {
+      });
     }
-  }, [keys.key]);
+  }, [isFocused, handlerHceSession.isEnabled, keys.key]);
 
   return (
     <KeyboardAwareScrollView style={styles.scrollView}>

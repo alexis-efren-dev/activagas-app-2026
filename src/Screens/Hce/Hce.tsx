@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { CommonActions } from "@react-navigation/native";
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Animated, Dimensions, StyleSheet } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,14 +22,16 @@ interface IProps {
   route: any;
   navigation: any;
 }
+
 const { height, width } = Dimensions.get("screen");
 
 const App: React.FC<IProps> = ({ route, navigation }) => {
+  const dispatch = useDispatch();
   const { mutate: mutateVin } = useMutationUpdateVin();
   const generalConfigurations = useSelector(
     (store: IStore) => store.generalConfigurations
   );
-  const [handlerClosure, setHandlerClosure] = useState(false);
+
   const {
     controllerTime,
     routeRefresh,
@@ -40,7 +42,17 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
     serial,
     variables,
   } = route.params;
-  const scrollY: any = React.useRef(new Animated.Value(0)).current;
+
+  // Animation
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  // State
+  const [handlerClosure, setHandlerClosure] = useState(false);
+  const [content, setContent] = useState<string>("");
+  const [controllerRead, setControllerRead] = useState<boolean>(true);
+  const hasStartedRef = useRef(false);
+
+  // Mutations
   const {
     mutate: mutateInitialActivation,
     isPending: isLoadingInitialActivation,
@@ -53,19 +65,31 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
     useMutationRegisterIncompleteKey();
   const { mutate: mutateGasRefills, isPending: isLoadingGasRefills } =
     useMutationRegisterGasRefills();
-  const [controllerRead, setControllerRead] = React.useState<boolean>(true);
-  const dispatch = useDispatch();
-  const [content, setContent] = useState<string>("");
 
-  // Refs to access latest values in memoized callbacks
-  const updatePropRef = useRef<any>(null);
+  // Refs for callbacks
   const mutateGasRefillsRef = useRef<any>(null);
   const mutateEmergencyActivationRef = useRef<any>(null);
   const mutateIncompleteKeyRef = useRef<any>(null);
   const mutateInitialActivationRef = useRef<any>(null);
   const mutateVinRef = useRef<any>(null);
+  const updatePropRef = useRef<any>(null);
 
-  const handlerErrorAlert = useCallback((message: string) => {
+  // Keep refs updated
+  mutateGasRefillsRef.current = mutateGasRefills;
+  mutateEmergencyActivationRef.current = mutateEmergencyActivation;
+  mutateIncompleteKeyRef.current = mutateIncompleteKey;
+  mutateInitialActivationRef.current = mutateInitialActivation;
+  mutateVinRef.current = mutateVin;
+
+  const isEncryptedKey = (data: string): boolean => {
+    if (data.length > 50) return true;
+    if (data.includes("+") || data.includes("/") || data.includes("=")) {
+      return true;
+    }
+    return false;
+  };
+
+  const handleError = useCallback((message: string) => {
     if (serial && updatePropRef.current) {
       updatePropRef.current("writable", true);
       updatePropRef.current("content", "");
@@ -81,15 +105,65 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
     setHandlerClosure(true);
   }, [serial, dispatch]);
 
-  const terminateWriteCallback = useCallback((data: any) => {
-    if (data !== "") {
+  const terminateWriteCallback = useCallback(
+    (data: any) => {
+
+      if (data === "" || data === "init") {
+        return;
+      }
+
+      if (isEncryptedKey(data)) {
+        return;
+      }
+
+      if (path === "releasedPath") {
+        if (data === "ACK") {
+          dispatch(
+            getAlertSuccess({
+              message: "Dispositivo liberado con exito",
+              show: true,
+              messageError: "",
+              showError: false,
+            })
+          );
+          setHandlerClosure(true);
+          return;
+        }
+
+        if (/^\d{10,}$/.test(data)) {
+          return;
+        }
+
+        dispatch(
+          getAlertSuccess({
+            message: "",
+            show: false,
+            messageError: "No se pudo liberar, intentalo mas tarde",
+            showError: true,
+          })
+        );
+        setHandlerClosure(true);
+        return;
+      }
+
+      // Ignore serial numbers (they are read data, not responses)
+      const validResponses = ["ACK", "NACK", "E00", "E01", "E02", "E03"];
+      const isValidResponse = validResponses.includes(data);
+      const isVinResponse = serial && data.length > 7 && data.length < 20;
+
+      if (!isValidResponse && !isVinResponse) {
+        return;
+      }
+
       if (data === "ACK") {
         if (serial && updatePropRef.current) {
           updatePropRef.current("writable", true);
           updatePropRef.current("content", "");
         }
 
-        if (path === "activationvalidation" && mutateGasRefillsRef.current) {
+        if (path === "releasedPath") {
+          // Liberacion: no se ejecuta ninguna mutation aqui
+        } else if (path === "activationvalidation" && mutateGasRefillsRef.current) {
           mutateGasRefillsRef.current(variables);
         } else if (path === "emergency" && mutateEmergencyActivationRef.current) {
           mutateEmergencyActivationRef.current(variables);
@@ -107,20 +181,17 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
             })
           );
         }
-
         setHandlerClosure(true);
       } else if (data === "NACK") {
-        handlerErrorAlert("Error de activacion, error al enviar datos");
+        handleError("Error de activacion, error al enviar datos");
       } else if (data === "E00") {
-        handlerErrorAlert("Error de activacion, dispositivo no encontrado");
+        handleError("Error de activacion, dispositivo no encontrado");
       } else if (data === "E01") {
-        handlerErrorAlert("Error de activacion, vin no coincide");
+        handleError("Error de activacion, vin no coincide");
       } else if (data === "E02") {
-        handlerErrorAlert(
-          "Error de activacion, computadora de gas no encontrada"
-        );
+        handleError("Error de activacion, computadora de gas no encontrada");
       } else if (data === "E03") {
-        handlerErrorAlert("Error de activacion, computadora de gas incorrecta");
+        handleError("Error de activacion, computadora de gas incorrecta");
       } else if (serial && data.length > 7) {
         if (updatePropRef.current) {
           updatePropRef.current("writable", true);
@@ -134,7 +205,6 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
             newVin: data,
           });
         }
-
         dispatch(handlerNfcMaintenanceAction("NFC"));
         dispatch(
           getAlertSuccess({
@@ -146,73 +216,54 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
         );
         setHandlerClosure(true);
       }
-    }
-  }, [serial, path, variables, user, dispatch, handlerErrorAlert]);
-
-  const terminateCallback = useCallback(() => {
-    if (updatePropRef.current) {
-      updatePropRef.current("writable", true);
-    }
-  }, []);
+    },
+    [path, variables, user, serial, dispatch, handleError]
+  );
 
   const { switchSession, updateProp } = useDataLayer({
-    terminate: terminateCallback,
     terminateWrite: terminateWriteCallback,
   });
 
-  // Keep refs updated with latest values
+  // Keep updateProp ref updated
   updatePropRef.current = updateProp;
-  mutateGasRefillsRef.current = mutateGasRefills;
-  mutateEmergencyActivationRef.current = mutateEmergencyActivation;
-  mutateIncompleteKeyRef.current = mutateIncompleteKey;
-  mutateInitialActivationRef.current = mutateInitialActivation;
-  mutateVinRef.current = mutateVin;
 
+  // Animation function
   const initAnimation = () => {
     Animated.timing(scrollY, {
       toValue: height,
       useNativeDriver: true,
       duration: controllerTime,
     }).start(() => {
-      //switchSession(false);
       updateProp("writable", true);
       updateProp("content", "");
-
       setHandlerClosure(true);
     });
   };
-  const awaitResetSession = async () => {
-    await switchSession(false);
-  };
-  React.useEffect(() => {
-    //test alerts with this
-    /*
-    const fname = () => {
-      clearInterval(refreshIntervalId);
-      terminateWrite('ACK');
-    };
-    let refreshIntervalId: any = setInterval(fname, 6000);
-    */
 
-    if (key) {
+  // Start HCE session on mount
+  useEffect(() => {
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
+
+    const keyToSend = key || isPredefinedContent;
+    if (keyToSend) {
       switchSession(true).then(() => {
-        setContent(key);
+        setContent(keyToSend);
       });
     }
   }, []);
-  React.useEffect(() => {
-    if (isPredefinedContent) {
-      switchSession(true);
-      setContent(isPredefinedContent);
-    }
-  }, [isPredefinedContent]);
-  React.useEffect(() => {
-    navigation.setOptions({
-      tabBarStyle: { display: "none", backgroundColor: "red" },
-    });
-  }, [JSON.stringify(navigation), JSON.stringify(route)]);
 
-  React.useEffect(() => {
+  // Set content and start animation
+  useEffect(() => {
+    if (controllerRead && content !== "") {
+      updateProp("content", content);
+      updateProp("writable", true);
+      initAnimation();
+    }
+  }, [controllerRead, content]);
+
+  // Handle navigation after completion
+  useEffect(() => {
     if (
       handlerClosure &&
       !isLoadingGasRefills &&
@@ -222,25 +273,13 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
     ) {
       setContent("");
       updateProp("content", "");
-      awaitResetSession().finally(() => {
+
+      switchSession(false).then(() => {
         dispatch(getKey({ key: "" }));
         setControllerRead(false);
         scrollY.setValue(0);
-        if (path === "emergency") {
-          navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{ name: "ActivatorActivations" }],
-            })
-          );
-        } else if (path === "incompleteClient") {
-          navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{ name: "ActivatorActivations" }],
-            })
-          );
-        } else if (path === "activationvalidation") {
+
+        if (path === "emergency" || path === "incompleteClient" || path === "activationvalidation" || path === "releasedPath") {
           dispatch(handlerHceSessionAction(true));
           navigation.dispatch(
             CommonActions.reset({
@@ -262,13 +301,6 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
     isLoadingInitialActivation,
   ]);
 
-  React.useEffect(() => {
-    if (controllerRead && content !== "") {
-      updateProp("content", content);
-      updateProp("writable", true);
-      initAnimation();
-    }
-  }, [controllerRead, content]);
   return (
     <LinearGradient
       style={{ flex: 1 }}
@@ -295,7 +327,6 @@ const App: React.FC<IProps> = ({ route, navigation }) => {
         }}
       />
       <Animated.View
-        ref={scrollY}
         style={[
           StyleSheet.absoluteFillObject,
           {

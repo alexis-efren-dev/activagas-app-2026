@@ -1,5 +1,5 @@
-import React from 'react';
-import {Dimensions, View} from 'react-native';
+import React from "react";
+import { Dimensions, View } from "react-native";
 import {
   Avatar,
   Button,
@@ -8,13 +8,13 @@ import {
   Modal,
   Portal,
   Title,
-} from 'react-native-paper';
-import {useDispatch, useSelector} from 'react-redux';
+} from "react-native-paper";
+import { useDispatch, useSelector } from "react-redux";
 
-import {useQueryGetReadTime} from '../../services/Configurations/useQueryGetReadTime';
-import {useMutationGetEncryptedKey} from '../../services/Maintenance/useMutationGetEncryptedKey';
-import { handlerNfcMaintenanceAction } from '../../redux/states/handlerNfcMaintenanceSlice';
-const {width} = Dimensions.get('screen');
+import { handlerNfcMaintenanceAction } from "../../redux/states/handlerNfcMaintenanceSlice";
+import { useQueryGetReadTime } from "../../services/Configurations/useQueryGetReadTime";
+import { useMutationGetEncryptedKey } from "../../services/Maintenance/useMutationGetEncryptedKey";
+const { width } = Dimensions.get("screen");
 
 interface IAlert {
   show: Function;
@@ -38,12 +38,14 @@ const AlertVehicleConfirmation: React.FC<IAlert> = ({
   } = useMutationGetEncryptedKey();
   const dispatch = useDispatch();
   const keys = useSelector((store: any) => store.key);
-  const {data, refetch, isError, isLoading, isFetching} = useQueryGetReadTime({
-    idGas: user.idGas,
-  });
+  const { data, refetch, isError, isLoading, isFetching } = useQueryGetReadTime(
+    {
+      idGas: user.idGas,
+    },
+  );
   const [controllerTime, setControllerTime] = React.useState<any>(false);
   const containerStyle = {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     padding: width * 0.15,
   };
   const LeftContent = (props: any) => (
@@ -51,14 +53,14 @@ const AlertVehicleConfirmation: React.FC<IAlert> = ({
       {...props}
       icon="account-question-outline"
       size={50}
-      style={{backgroundColor: '#1C9ADD', top: -20}}
+      style={{ backgroundColor: "#1C9ADD", top: -20 }}
     />
   );
   React.useEffect(() => {
     if (user) {
       if (user.idGas) {
         refetch();
-        mutate({idGas: user.idGas, idVehicle});
+        mutate({ idGas: user.idGas, idVehicle });
       }
     }
   }, [user]);
@@ -74,70 +76,82 @@ const AlertVehicleConfirmation: React.FC<IAlert> = ({
       <View
         style={{
           flex: 2,
-          backgroundColor: 'white',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <IconButton icon="water-boiler-alert" iconColor={'black'} size={80} />
+          backgroundColor: "white",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <IconButton icon="water-boiler-alert" iconColor={"black"} size={80} />
         <Title>Error de servidor, intentalo mas tarde</Title>
       </View>
     );
   }
-
   return (
     <Portal>
       <Modal
         visible={true}
         onDismiss={() => show(false)}
-        contentContainerStyle={containerStyle}>
-        <Card style={{width: width * 0.7}}>
+        contentContainerStyle={containerStyle}
+      >
+        <Card style={{ width: width * 0.7 }}>
           <View
             style={{
-              width: '100%',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
+              width: "100%",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <LeftContent />
           </View>
           <Card.Content
-            style={{justifyContent: 'center', alignItems: 'center'}}>
-            <Title style={{fontSize: 15}}>
+            style={{ justifyContent: "center", alignItems: "center" }}
+          >
+            <Title style={{ fontSize: 15 }}>
               {isErrorMutation
-                ? 'No se puede confirmar este vehiculo'
-                : '¿deseas confirmar instalacion de este vehiculo?'}
+                ? "No se puede confirmar este vehiculo"
+                : "¿deseas confirmar instalacion de este vehiculo?"}
             </Title>
           </Card.Content>
           <Card.Actions
-            style={{justifyContent: 'center', alignItems: 'center'}}>
+            style={{ justifyContent: "center", alignItems: "center" }}
+          >
             <Button
-              disabled={isLoading || isFetching || isErrorMutation || isLoadingMutation}
-              loading={isLoading || isFetching || isLoadingMutation || isLoadingMutation}
+              disabled={
+                isLoading || isFetching || isErrorMutation || isLoadingMutation
+              }
+              loading={
+                isLoading ||
+                isFetching ||
+                isLoadingMutation ||
+                isLoadingMutation
+              }
               mode="contained"
-              style={{flex: 1, margin: 2}}
+              style={{ flex: 1, margin: 2 }}
               buttonColor="#1C9ADD"
               onPress={() => {
-                /*
-                if(dataMutation){
-                  dispatch(handlerNfcMaintenanceAction(''));
-                show(false);
-                navigation.navigate('ScannerScreenHce', {
-                  serial,
-                  user,
-                  key: keys.key,
-                  controllerTime: controllerTime,
-                  routeRefresh: 'Dashboard',
-                  isPredefinedContent: dataMutation.confirmationEncryptResolver,
-                });
+                if (dataMutation) {
+                  dispatch(handlerNfcMaintenanceAction(""));
+                  show(false);
+                  navigation.navigate("ScannerScreenHce", {
+                    serial,
+                    user,
+                    key: keys.key,
+                    controllerTime: controllerTime,
+                    routeRefresh: "Dashboard",
+                    isPredefinedContent:
+                      dataMutation.confirmationEncryptResolver,
+                  });
                 }
-                */
-              }}>
+              }}
+            >
               Confirmar
             </Button>
             <Button
               mode="contained"
-              style={{flex: 1, margin: 2}}
+              style={{ flex: 1, margin: 2 }}
               buttonColor="#1C9ADD"
-              onPress={() => show(false)}>
+              onPress={() => show(false)}
+            >
               Cancelar
             </Button>
           </Card.Actions>
